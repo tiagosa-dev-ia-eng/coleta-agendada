@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0, M1, M2 e M3 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0–M4 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -111,15 +111,18 @@ dirs locais (gitignorados).
 
 **Critério de saída:** CT-INT-001 parcial até `QUOTE_DRAFT`; transições inválidas rejeitadas; histórico auditável. *(Pende decisão de storage/validação de anexos — ver gate G-07.)*
 
-### M4 — Orçamentos e validação humana
+### M4 — Orçamentos e validação humana  ✅ (03/09/2026)
 **Referências:** docs 02 (RF-004..009), 09 (RN-ORC-001..005), 07 §5; US-004, US-006, US-007; CT-INT-001/002/007; ADR-007.
+**Decisão G-01 (MVP):** catálogo de exames global + preço manual por laboratório — nota de evolução na tabela de gates.
 
-- [ ] Domínio de orçamento com **dois objetos**: rascunho (IA ou manual) e orçamento final.
-- [ ] Versionamento de orçamento (v1 rascunho → v2 corrigido → v3 enviado — doc 09 §4).
-- [ ] Regras RN-ORC-001..003 no backend: orçamento final exige `validated_by`/`validated_at`; `/send` bloqueia orçamento não validado.
-- [ ] RN-ORC-004 (PROPOSTO) e RN-ORC-005 (PROPOSTO): confirmar com o usuário antes de implementar (invalidação de validação pós-edição; registro da versão aprovada pelo paciente).
-- [ ] Fluxo de aprovação/rejeição/cancelamento pelo paciente (estados do doc 05).
-- [ ] Endpoints `quotations` (draft/validate/send/approve/reject — doc 07 §5).
+- [x] Domínio de orçamento com **dois objetos**: rascunho (IA ou manual) e orçamento final.
+- [x] Versionamento de orçamento (v1 rascunho → v2 corrigido → v3 enviado — doc 09 §4).
+- [x] Regras RN-ORC-001..003 no backend: orçamento final exige `validated_by`/`validated_at`; `/send` bloqueia orçamento não validado.
+- [x] RN-ORC-004 (PROPOSTO) e RN-ORC-005 (PROPOSTO): confirmar com o usuário antes de implementar (invalidação de validação pós-edição; registro da versão aprovada pelo paciente).
+- [x] Fluxo de aprovação/rejeição/cancelamento pelo paciente (estados do doc 05).
+- [x] Endpoints `quotations` (draft/validate/send/approve/reject — doc 07 §5).
+
+**Resultado (03/09/2026):** pytest **60/60**; ruff limpo; smoke OK (draft com preços 71,00 → validate v2 final → send → approve; histórico REQUESTED→…→APPROVED). Apps catalog (Exam+ExamPrice) e quotations (Quotation versionado + items).
 
 **Critério de saída:** CT-INT-001, CT-INT-002 e CT-INT-007 verdes; rascunho nunca é enviável.
 
@@ -243,7 +246,7 @@ Cada decisão deve ser registrada no doc 15 e marcada como CONFIRMADO/INFERIDO/P
 
 | # | Decisão | Bloqueia | Status atual |
 |---|---|---|---|
-| G-01 | Catálogo de exames + **origem oficial dos preços** (tabela por laboratório/farmácia/unidade/integração?) | M4 (orçamento com valores) | PENDENTE |
+| G-01 | Catálogo de exames + origem de preços — **DECIDIDO (03/09): catálogo global + preço manual por laboratório** (app catalog, seed_catalog); **nota evolução**: preço por região/unidade/parceiro ou integração LIS | M4 | RESOLVIDO (MVP) |
 | G-02 | Gateway de pagamento (provedor, sandbox, fluxo do link) | M6 (link real) | PENDENTE |
 | G-03 | Gatilho exato da comissão "a pagar" (evento que gera) e regra de estorno | M7 | PENDENTE |
 | G-04 | Infra: provedor cloud, domínio, object storage, worker assíncrono (tecnologia), RPO/RTO | M11 | PENDENTE |

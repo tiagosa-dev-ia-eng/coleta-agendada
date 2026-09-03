@@ -34,6 +34,14 @@ class CollectionRequest(models.Model):
         related_name="requests",
         verbose_name="paciente",
     )
+    laboratory = models.ForeignKey(
+        "organizations.Laboratory",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="requests",
+        verbose_name="laboratório responsável",
+    )
     desired_date = models.DateField(null=True, blank=True, verbose_name="data desejada")
     desired_period = models.CharField(
         max_length=16, choices=DesiredPeriod.choices, blank=True, verbose_name="período desejado"
