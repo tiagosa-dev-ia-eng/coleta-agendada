@@ -104,6 +104,28 @@ export default function WhatsappSimulator() {
     }
   }
 
+  async function limparMemoria() {
+    if (!token) return;
+    if (!window.confirm("Limpar a memória da conversa? As mensagens serão apagadas e o chatbot recomeça do zero.")) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/v1/whatsapp/conversations/by-phone/${phone}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+        setNotice("Erro ao limpar: " + (err?.error?.message ?? res.statusText));
+        return;
+      }
+      setMessages([]);
+      setNotice("Memória limpa — conversa reiniciada.");
+    } catch {
+      setNotice("Falha de rede ao limpar a conversa.");
+    }
+  }
+
   // polling suave enquanto autenticado (simula o recebimento da resposta)
   useEffect(() => {
     if (!token) return;
@@ -150,9 +172,18 @@ export default function WhatsappSimulator() {
             Homologação interna (M8) — canal: {phone} · provider simulator
           </p>
         </div>
-        <button onClick={() => setToken(null)} className="rounded bg-black/20 px-3 py-1 text-xs text-white hover:bg-black/30">
-          Sair
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={limparMemoria}
+            title="Zera a conversa com o chatbot (homologação)"
+            className="rounded border border-white/30 px-3 py-1 text-xs text-white hover:bg-white/10"
+          >
+            🧹 Limpar memória
+          </button>
+          <button onClick={() => setToken(null)} className="rounded bg-black/20 px-3 py-1 text-xs text-white hover:bg-black/30">
+            Sair
+          </button>
+        </div>
       </header>
       <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {messages.length === 0 && (

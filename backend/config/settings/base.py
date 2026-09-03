@@ -172,3 +172,6 @@ SIMPLE_JWT = {
 # CORS (doc 13 §4)
 _CORS_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000")
 CORS_ALLOWED_ORIGINS = [o for o in _CORS_ORIGINS.split(",") if o]
+# demo via túnel (origem dinâmica): permitir todas as origens SEM credenciais de cookie
+_allow_all = os.getenv("CORS_ALLOW_ALL_ORIGINS", "false").lower()
+CORS_ALLOW_ALL_ORIGINS = _allow_all in {"1", "true", "yes"}

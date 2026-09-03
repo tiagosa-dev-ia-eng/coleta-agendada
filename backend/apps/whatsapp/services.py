@@ -138,6 +138,24 @@ class WhatsAppService:
         return conv
 
     @staticmethod
+    def clear_memory(conv, *, by_user=None):
+        """Zera e reinicia a conversa (homologação): apaga mensagens e reabre."""
+        from apps.audit.models import record as audit_record
+
+        cleared = conv.messages.count()
+        conv.messages.all().delete()
+        conv.status = "open"
+        conv.save(update_fields=["status", "updated_at"])
+        audit_record(
+            action="whatsapp.memory_cleared",
+            entity_type="whatsapp.Conversation",
+            entity_id=conv.pk,
+            user=by_user if (by_user and by_user.is_authenticated) else None,
+            metadata={"cleared": cleared},
+        )
+        return cleared
+
+    @staticmethod
     def _act(extraction, conv):
         intent = extraction.get("intent")
         threshold = settings.AI_MIN_CONFIDENCE

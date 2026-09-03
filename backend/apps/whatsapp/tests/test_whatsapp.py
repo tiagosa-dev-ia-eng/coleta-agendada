@@ -113,3 +113,24 @@ def test_conversation_scope(make_user, auth_client):
     Patient.objects.create(user=other)
     blocked = auth_client(other).get(f"/api/v1/whatsapp/conversations/by-phone/{PHONE}")
     assert blocked.status_code == 403
+
+def test_clear_memory_resets_conversation(make_user, auth_client):
+    env = _env(make_user)
+    _send(env["patient"], "Quero agendar coleta de hemograma")
+    patient_client = auth_client(env["patient"])
+    conv = WhatsAppConversation.objects.get(phone=PHONE)
+    assert conv.messages.count() == 2
+    # força status encaminhada a humano para validar reabertura
+    conv.status = "human"
+    conv.save(update_fields=["status"])
+    resp = patient_client.delete(f"/api/v1/whatsapp/conversations/by-phone/{PHONE}")
+    assert resp.status_code == 200
+    assert resp.json()["cleared"] == 2
+    assert resp.json()["status"] == "open"
+    conv.refresh_from_db()
+    assert conv.messages.count() == 0
+    # outro paciente não pode limpar a conversa
+    other = make_user(role_code="patient", email="outro-clear@exemplo.com", phone="5511900001111")
+    Patient.objects.create(user=other)
+    blocked = auth_client(other).delete(f"/api/v1/whatsapp/conversations/by-phone/{PHONE}")
+    assert blocked.status_code == 403

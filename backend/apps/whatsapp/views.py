@@ -102,6 +102,14 @@ class ConversationByPhoneView(APIView):
             }
         )
 
+    def delete(self, request, phone):
+        """Limpa a memória da conversa (homologação) e reinicia do zero."""
+        conv = WhatsAppConversation.objects.filter(phone=normalize_phone(phone)).first()
+        if conv is None or not _can_view_conversation(request.user, conv):
+            raise PermissionDenied()
+        cleared = WhatsAppService.clear_memory(conv, by_user=request.user)
+        return Response({"cleared": cleared, "status": conv.status})
+
 
 class ConversationListView(APIView):
     """GET /whatsapp/conversations — conversas do laboratório (escopo)."""
