@@ -1,0 +1,8 @@
+"""ASGI config para o Coleta Agendada."""
+import os
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
+
+from django.core.asgi import get_asgi_application
+
+application = get_asgi_application()

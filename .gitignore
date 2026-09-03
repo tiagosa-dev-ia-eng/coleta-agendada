@@ -1,0 +1,48 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pylibs/
+venv/
+env/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+coverage/
+htmlcov/
+staticfiles/
+media/
+db.sqlite3
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Caches locais (pnpm/ferramentas — XDG dentro do workspace)
+.cache/
+.data/
+.config/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Docker volumes locais
+infra/data/
+infra/pgdata/
+infra/redisdata/
+
+# Logs / SO
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
