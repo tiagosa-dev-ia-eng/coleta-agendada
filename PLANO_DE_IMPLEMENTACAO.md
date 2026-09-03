@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0–M5 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0–M6 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -140,13 +140,16 @@ dirs locais (gitignorados).
 
 **Critério de saída:** CT-INT-003/004/005 verdes; conclusão com pagamento pendente permitida.
 
-### M6 — Pagamentos (não bloqueante)
+### M6 — Pagamentos (não bloqueante)  ✅ (03/09/2026)
 **Referências:** docs 02 (RF-014..016), 10, 07 §7; CT-INT-005/006; doc 15 (gate financeiro).
+**Nota:** gateway roda via **adapter** com FakeGateway (MVP); provedor real depende do gate **G-02** (implementa a mesma interface).
 
-- [ ] Modelos/estados de pagamento (doc 10 §2) e integração com a solicitação.
-- [ ] **Adapter de gateway** (interface desacoplada — R-006) + link de pagamento opcional (RF-014) e registro de pagamento presencial (RF-015). *(Gateway real = gate G-02; MVP roda com adapter fake/sandbox.)*
-- [ ] Webhook de pagamento **idempotente** com chave de idempotência (doc 07 §12; CT-INT-008).
-- [ ] Endpoints `payments/link`, `payments/webhook`, `payments/{id}/confirm` (doc 07 §7).
+- [x] Modelos/estados de pagamento (doc 10 §2) e integração com a solicitação.
+- [x] **Adapter de gateway** (interface desacoplada — R-006) + link de pagamento opcional (RF-014) e registro de pagamento presencial (RF-015). *(Gateway real = gate G-02; MVP roda com adapter fake/sandbox.)*
+- [x] Webhook de pagamento **idempotente** com chave de idempotência (doc 07 §12; CT-INT-008).
+- [x] Endpoints `payments/link`, `payments/webhook`, `payments/{id}/confirm` (doc 07 §7).
+
+**Resultado (03/09/2026):** pytest **74/74**; ruff limpo; smoke OK (link fake → webhook CONFIRMED idempotente → presencial + confirmação manual). App payments; confirmação NÃO altera status da solicitação (ADR-008).
 
 **Critério de saída:** CT-INT-005 e CT-INT-006 verdes; duplicidade de webhook não duplica operação.
 

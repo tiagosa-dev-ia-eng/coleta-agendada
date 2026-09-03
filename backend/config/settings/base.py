@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "apps.patients",
     "apps.requests",
     "apps.scheduling",
+    "apps.payments",
     "apps.catalog",
     "apps.quotations",
     "apps.core",
@@ -108,6 +109,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Evolução futura: object storage S3-compatible via django-storages em produção
 # (trocar DEFAULT_FILE_STORAGE; os upload_to relativos permanecem).
 MAX_MEDICAL_UPLOAD_BYTES = int(os.getenv("MAX_MEDICAL_UPLOAD_MB", "10")) * 1024 * 1024
+
+# Pagamentos (doc 10/13): gateway via adapter (R-006) — MVP usa fake (gate G-02)
+PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fake")
+PAYMENT_WEBHOOK_SECRET = os.getenv("PAYMENT_WEBHOOK_SECRET", "")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
