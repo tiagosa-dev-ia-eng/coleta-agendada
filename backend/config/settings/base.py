@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "apps.scheduling",
     "apps.payments",
     "apps.commissions",
+    "apps.whatsapp",
     "apps.catalog",
     "apps.quotations",
     "apps.core",
@@ -114,6 +115,16 @@ MAX_MEDICAL_UPLOAD_BYTES = int(os.getenv("MAX_MEDICAL_UPLOAD_MB", "10")) * 1024 
 # Pagamentos (doc 10/13): gateway via adapter (R-006) — MVP usa fake (gate G-02)
 PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fake")
 PAYMENT_WEBHOOK_SECRET = os.getenv("PAYMENT_WEBHOOK_SECRET", "")
+
+# IA (doc 08): DeepSeek via env — sem chave cai no mock (homologação interna)
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+DEEPSEEK_TEMPERATURE = float(os.getenv("DEEPSEEK_TEMPERATURE", "0.2"))
+AI_MIN_CONFIDENCE = float(os.getenv("AI_MIN_CONFIDENCE", "0.7"))
+
+# WhatsApp (doc 08): provider "simulator" até o gate G-05 (payload real)
+WHATSAPP_PROVIDER = os.getenv("WHATSAPP_PROVIDER", "simulator")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

@@ -10,6 +10,8 @@ ignore = []
 
 [tool.ruff.lint.per-file-ignores]
 "*/migrations/*" = ["E501"]
+# prompts/sistema e analisadores de texto livre: quebra de linha livre
+"apps/ai/*" = ["E501"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"

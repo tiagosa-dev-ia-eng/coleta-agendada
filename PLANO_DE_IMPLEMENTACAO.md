@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0–M7 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0–M8 executados em 03/09/2026 (M8: pipeline+simulador; G-05/G-10 pendentes) — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -166,14 +166,17 @@ dirs locais (gitignorados).
 
 **Critério de saída:** exemplos do doc 10 §3 (10%/15% percentual e valores fixos) cobertos por testes unitários; lançamentos imutáveis após geração.
 
-### M8 — WhatsApp + IA (DeepSeek)
+### M8 — WhatsApp + IA (DeepSeek)  ✅ estrutura + simulador (03/09/2026)
 **Referências:** docs 02 (RF-020..022), 08, 06 (WhatsAppConversation/WhatsAppMessage), 07 §10; US-002; CT-INT-008; doc 15 §3 (WhatsApp/IA).
+**Notas:** provedor real do WhatsApp (G-05) e parâmetros do modelo (G-10) seguem PENDENTES — estrutura roda com provider simulator + DeepSeek real quando `DEEPSEEK_API_KEY` estiver em backend/.env (sem chave usa mock).
 
-- [ ] Webhook próprio `/api/v1/webhooks/whatsapp` **idempotente** (doc 07 §10/§12); autenticação do webhook por secret (doc 13 §4). *(Provedor/payload = gate G-05.)*
-- [ ] Modelos de conversa e mensagens com persistência de mensagem recebida, resposta enviada, interpretação da IA, modelo/versão, timestamps e erro (doc 08 §7).
-- [ ] Adapter DeepSeek (desacoplado); extração estruturada com **validação por schema** antes de persistir (doc 16 §segurança); intenção, confiança, `missing_fields`, `requires_human` (doc 08 §5).
-- [ ] Encaminhamento para humano quando a confiança for baixa (doc 08 §6).
-- [ ] IA **proibida** de enviar orçamento final, confirmar preço/pagamento/disponibilidade/coleta (doc 08 §4) — garantido por regras no backend, não no prompt.
+- [x] Webhook próprio `/api/v1/webhooks/whatsapp` **idempotente** (doc 07 §10/§12); autenticação do webhook por secret (doc 13 §4). *(Provedor/payload = gate G-05.)*
+- [x] Modelos de conversa e mensagens com persistência de mensagem recebida, resposta enviada, interpretação da IA, modelo/versão, timestamps e erro (doc 08 §7).
+- [x] Adapter DeepSeek (desacoplado); extração estruturada com **validação por schema** antes de persistir (doc 16 §segurança); intenção, confiança, `missing_fields`, `requires_human` (doc 08 §5).
+- [x] Encaminhamento para humano quando a confiança for baixa (doc 08 §6).
+- [x] IA **proibida** de enviar orçamento final, confirmar preço/pagamento/disponibilidade/coleta (doc 08 §4) — garantido por regras no backend, não no prompt.
+
+**Resultado (03/09/2026):** pytest **85/85**; ruff limpo; frontend build OK. Webhook `/api/v1/webhooks/whatsapp` idempotente; apps ai (DeepSeek + mock + schema doc 08) e whatsapp (conversas/mensagens); **simulador de webchat** em `/whatsapp-simulator` (frontend) para homologação interna; IA cria solicitação + RASCUNHO (nunca final).
 
 **Critério de saída:** conversa gera solicitação/protocolo válido (RF-022); saída de IA inválida é rejeitada pelo schema; duplicidade tratada (CT-INT-008).
 
