@@ -139,4 +139,8 @@ class AppointmentService:
         appt.completed_at = timezone.now()
         appt.save(update_fields=["checkin_at", "completed_at", "updated_at"])
         _audit(request or performed_by, "appointment.completed", appt)
+        # G-03: comissões FIXAS geram na conclusão (não bloqueiam a coleta)
+        from apps.commissions.services import trigger_fixed_on_completion
+
+        trigger_fixed_on_completion(appt.request)
         return appt

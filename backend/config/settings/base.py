@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "apps.requests",
     "apps.scheduling",
     "apps.payments",
+    "apps.commissions",
     "apps.catalog",
     "apps.quotations",
     "apps.core",

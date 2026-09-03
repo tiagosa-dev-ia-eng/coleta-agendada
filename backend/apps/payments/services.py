@@ -121,6 +121,10 @@ class PaymentService:
             payment,
             {"origin": origin, "code": payment.code},
         )
+        # G-03: comissões PERCENTUAIS geram na confirmação (base = valor pago)
+        from apps.commissions.services import trigger_percentage_on_payment
+
+        trigger_percentage_on_payment(payment.request, payment)
         return payment
 
     @staticmethod

@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0–M6 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0–M7 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -153,13 +153,16 @@ dirs locais (gitignorados).
 
 **Critério de saída:** CT-INT-005 e CT-INT-006 verdes; duplicidade de webhook não duplica operação.
 
-### M7 — Comissões
+### M7 — Comissões  ✅ (03/09/2026)
 **Referências:** docs 02 (RF-017..019), 10, 06 (CommissionRule/Commission), 07 §8; US-009, US-013, US-016, US-019; ADR-010; CT-INT-006.
+**Decisão G-03:** gatilhos percentual (pagamento confirmado) e fixo (coleta concluída) — sem backfill retroativo para pagamentos já confirmados antes da criação da regra.
 
-- [ ] `CommissionRule` persistida/versionada: beneficiary_type/id, `PERCENTAGE`/FIXED, trigger, vigência (`valid_from`/`valid_until`), `active` (doc 10 §7, doc 06).
-- [ ] Cálculo via serviço `CommissionService.calculate()` gravando **regra usada + base de cálculo** no lançamento; sem recálculo silencioso (doc 16).
-- [ ] Gatilho de geração e estado `COMMISSION_PENDING/GENERATED` (doc 05 §2) — *decisão exata do gatilho = gate G-03; manter coleta ≠ geração definitiva (doc 10 §5).*
-- [ ] Estorno explícito, marcação de pago, extrato por beneficiário; endpoints do doc 07 §8.
+- [x] `CommissionRule` persistida/versionada: beneficiary_type/id, `PERCENTAGE`/FIXED, trigger, vigência (`valid_from`/`valid_until`), `active` (doc 10 §7, doc 06).
+- [x] Cálculo via serviço `CommissionService.calculate()` gravando **regra usada + base de cálculo** no lançamento; sem recálculo silencioso (doc 16).
+- [x] Gatilho de geração e estado `COMMISSION_PENDING/GENERATED` (doc 05 §2) — *decisão exata do gatilho = gate G-03; manter coleta ≠ geração definitiva (doc 10 §5).*
+- [x] Estorno explícito, marcação de pago, extrato por beneficiário; endpoints do doc 07 §8.
+
+**Resultado (03/09/2026):** pytest **80/80**; ruff limpo. App commissions: CommissionRule (versionada/ativa) + Commission (lançamento imutável com snapshot da regra + base). Exemplos doc 10 cobertos (10% e 15% sobre base; fixo R$ 5/agendamento).
 
 **Critério de saída:** exemplos do doc 10 §3 (10%/15% percentual e valores fixos) cobertos por testes unitários; lançamentos imutáveis após geração.
 
@@ -254,7 +257,7 @@ Cada decisão deve ser registrada no doc 15 e marcada como CONFIRMADO/INFERIDO/P
 |---|---|---|---|
 | G-01 | Catálogo de exames + origem de preços — **DECIDIDO (03/09): catálogo global + preço manual por laboratório** (app catalog, seed_catalog); **nota evolução**: preço por região/unidade/parceiro ou integração LIS | M4 | RESOLVIDO (MVP) |
 | G-02 | Gateway de pagamento (provedor, sandbox, fluxo do link) | M6 (link real) | PENDENTE |
-| G-03 | Gatilho exato da comissão "a pagar" (evento que gera) e regra de estorno | M7 | PENDENTE |
+| G-03 | Gatilho da comissão e estorno — **DECIDIDO (03/09): PERCENTAGE dispara na confirmação do pagamento (base = valor pago); FIXED dispara na conclusão da coleta**; estorno explícito sem apagar lançamento | M7 | RESOLVIDO |
 | G-04 | Infra: provedor cloud, domínio, object storage, worker assíncrono (tecnologia), RPO/RTO | M11 | PENDENTE |
 | G-05 | WhatsApp: provedor, payload do webhook, autenticação, templates, mídias | M8 (produção) | PENDENTE |
 | G-06 | Privacidade/LGPD: retenção, consentimento, política de acesso, exclusão/correção | M10 | PENDENTE |
