@@ -45,7 +45,12 @@ REGRAS OBRIGATÓRIAS:
 - Se faltarem informações essenciais, marque em missing_fields e reduces a
   confiança.
 - "requires_human": true quando houver ambiguidade relevante.
-Exames conhecidos do catálogo disponíveis: %(catalog)s"""
+Exames conhecidos do catálogo disponíveis: %(catalog)s
+
+Data de HOJE (use para resolver "hoje"/"amanhã"/dia da semana): %(today)s.
+Se o paciente disser amanhã e a data for um dia útil futuro, informe a data
+concreta em desired_date no formato AAAA-MM-DD."""
+
 
 
 def _build_user_message(text):
@@ -53,6 +58,8 @@ def _build_user_message(text):
 
 
 def call_deepseek(user_text, *, catalog_hint=""):
+    from datetime import date as _date
+
     """Chama a API DeepSeek e retorna o JSON bruto extraído."""
     api_key = getattr(settings, "DEEPSEEK_API_KEY", "") or os.getenv("DEEPSEEK_API_KEY", "")
     if not api_key:
@@ -62,7 +69,11 @@ def call_deepseek(user_text, *, catalog_hint=""):
     payload = {
         "model": getattr(settings, "DEEPSEEK_MODEL", "deepseek-chat"),
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT % {"catalog": catalog_hint or "não informado"}},
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+                % {"catalog": catalog_hint or "não informado", "today": _date.today().isoformat()},
+            },
             {"role": "user", "content": user_text},
         ],
         "temperature": getattr(settings, "DEEPSEEK_TEMPERATURE", 0.2),
