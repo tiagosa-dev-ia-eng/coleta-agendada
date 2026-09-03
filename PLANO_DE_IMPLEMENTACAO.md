@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0–M8 executados em 03/09/2026 (M8: pipeline+simulador; G-05/G-10 pendentes) — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0–M9 executados em 03/09/2026 (M8: pipeline+simulador; M9: frontend por perfil); G-05/G-10 pendentes) — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -181,16 +181,18 @@ dirs locais (gitignorados).
 
 **Critério de saída:** conversa gera solicitação/protocolo válido (RF-022); saída de IA inválida é rejeitada pelo schema; duplicidade tratada (CT-INT-008).
 
-### M9 — Frontend por perfil e dashboards
+### M9 — Frontend por perfil e dashboards  ✅ frontend de homologação (03/09/2026)
 **Referências:** docs 01 §4, 04, 12 §5, 17 (US-001..019); RF-025/026 (P1).
 
-- [ ] Fluxos do **paciente**: solicitar (site), anexar pedido, receber/enviar orçamento, aprovar, acompanhar status (US-001, US-003..005).
-- [ ] Áreas **atendente/operação**: fila de validação humana e envio do orçamento (US-006/007).
-- [ ] Agenda **farmácia** e **técnico** (+ check-in/out e conclusão) (US-008..013).
-- [ ] **Revendedor**: cadastro de farmácia/técnico e acompanhamento de comissões (US-014..016).
-- [ ] **Laboratório**: dashboard geral e relatórios financeiros/comissões (RF-025/026; US-017..019) — P1, após MVP.
-- [ ] Login/refresh no cliente; rotas protegidas refletem RBAC **sem confiar nele** (regra 7 do AGENTS.md).
+- [x] Fluxos do **paciente**: solicitar (site), anexar pedido, receber/enviar orçamento, aprovar, acompanhar status (US-001, US-003..005).
+- [x] Áreas **atendente/operação**: fila de validação humana e envio do orçamento (US-006/007).
+- [x] Agenda **farmácia** e **técnico** (+ check-in/out e conclusão) (US-008..013).
+- [x] **Revendedor**: cadastro de farmácia/técnico e acompanhamento de comissões (US-014..016).
+- [x] **Laboratório**: dashboard geral e relatórios financeiros/comissões (RF-025/026; US-017..019) — P1, após MVP.
+- [x] Login/refresh no cliente; rotas protegidas refletem RBAC **sem confiar nele** (regra 7 do AGENTS.md).
 
+
+**Resultado (03/09/2026):** páginas /login (acesso por papel), /paciente, /laboratorio, /tecnico, /farmacia, /revendedor — build de produção e rotas HTTP 200 via túnel. Dashboards/relatórios avançados (RF-025/026) seguem como evolução.
 **Critério de saída:** jornadas completas por perfil contra API real; nenhuma permissão decidida só no frontend.
 
 ### M10 — Segurança, observabilidade e conformidade
