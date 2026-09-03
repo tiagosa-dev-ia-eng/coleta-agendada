@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0, M1 e M2 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0, M1, M2 e M3 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -97,14 +97,17 @@ dirs locais (gitignorados).
 
 **Critério de saída:** cadastros operacionais por perfil conforme matriz do doc 04 §2, com testes de permissão.
 
-### M3 — Solicitações, pedido médico e máquina de estados
+### M3 — Solicitações, pedido médico e máquina de estados  ✅ (03/09/2026)
 **Referências:** docs 02 (RF-001..003, RF-022), 05, 06 (CollectionRequest, MedicalOrder, CollectionRequestExam), 07 §3-4; US-001, US-003, US-005.
+**Decisão G-07:** storage local (media/) — ver nota de evolução na tabela de gates.
 
-- [ ] Modelo `CollectionRequest` com `protocol` e dados de coleta (data/período/modalidade/local).
-- [ ] Máquina de estados central (doc 05 §2) implementada como **serviço de domínio** (`RequestStateService`) com mapa de transições válidas; frontend não altera estados.
-- [ ] Histórico de transições (`request_status_history`: anterior, novo, responsável, data/hora, origem, motivo, metadados — doc 05 §5).
-- [ ] Upload/armazenamento de pedido médico com validação de tipo/tamanho (doc 11 §3).
-- [ ] Endpoints `/api/v1/requests...` (doc 07 §3-4), incluindo `GET history` e `POST cancel`.
+- [x] Modelo `CollectionRequest` com `protocol` e dados de coleta (data/período/modalidade/local).
+- [x] Máquina de estados central (doc 05 §2) implementada como **serviço de domínio** (`RequestStateService`) com mapa de transições válidas; frontend não altera estados.
+- [x] Histórico de transições (`request_status_history`: anterior, novo, responsável, data/hora, origem, motivo, metadados — doc 05 §5).
+- [x] Upload/armazenamento de pedido médico com validação de tipo/tamanho (doc 11 §3).
+- [x] Endpoints `/api/v1/requests...` (doc 07 §3-4), incluindo `GET history` e `POST cancel`.
+
+**Resultado (03/09/2026):** pytest **50/50**; ruff limpo; smoke HTTP OK (paciente cria solicitação com protocolo CA-…, upload PDF → media/, histórico REQUESTED→CANCELED). App requests (CollectionRequest/MedicalOrder/RequestStatusHistory + RequestStateService).
 
 **Critério de saída:** CT-INT-001 parcial até `QUOTE_DRAFT`; transições inválidas rejeitadas; histórico auditável. *(Pende decisão de storage/validação de anexos — ver gate G-07.)*
 
@@ -246,7 +249,7 @@ Cada decisão deve ser registrada no doc 15 e marcada como CONFIRMADO/INFERIDO/P
 | G-04 | Infra: provedor cloud, domínio, object storage, worker assíncrono (tecnologia), RPO/RTO | M11 | PENDENTE |
 | G-05 | WhatsApp: provedor, payload do webhook, autenticação, templates, mídias | M8 (produção) | PENDENTE |
 | G-06 | Privacidade/LGPD: retenção, consentimento, política de acesso, exclusão/correção | M10 | PENDENTE |
-| G-07 | Storage e política de anexos (pedido médico) | M3 | PENDENTE |
+| G-07 | Storage de anexos (pedido médico) — **DECIDIDO (03/09): storage local** em `media/` (MEDIA_ROOT) com limite por env; **nota de evolução**: object storage S3-compatible via django-storages em produção (trocar DEFAULT_FILE_STORAGE) | M3 | RESOLVIDO |
 | G-08 | RN-ORC-004 (invalidação pós-edição) e RN-ORC-005 (versão aprovada) | M4 (regras) | PROPOSTO |
 | G-09 | Reagendamento (`reschedule`), política de cancelamento, validade do orçamento | M5 | PENDENTE |
 | G-10 | Parâmetros de IA: modelo DeepSeek, prompt, temperatura, confiança mínima, fallback, custo | M8 | PENDENTE |

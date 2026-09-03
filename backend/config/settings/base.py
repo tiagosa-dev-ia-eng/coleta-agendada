@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "apps.organizations",
     "apps.technicians",
     "apps.patients",
+    "apps.requests",
     "apps.core",
     "apps.audit",
 ]
@@ -100,6 +101,10 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# Anexos — storage LOCAL por decisão G-07 (03/09/2026).
+# Evolução futura: object storage S3-compatible via django-storages em produção
+# (trocar DEFAULT_FILE_STORAGE; os upload_to relativos permanecem).
+MAX_MEDICAL_UPLOAD_BYTES = int(os.getenv("MAX_MEDICAL_UPLOAD_MB", "10")) * 1024 * 1024
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

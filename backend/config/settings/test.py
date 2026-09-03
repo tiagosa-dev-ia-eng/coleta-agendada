@@ -12,6 +12,11 @@ DATABASES = {
 }
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
+import tempfile  # noqa: E402
+
+# anexos de teste em diretório temporário (não poluir backend/media do dev)
+MEDIA_ROOT = tempfile.mkdtemp(prefix="ca-test-media-")
+
 # Throttles altos na suíte para não interferir (lockout testado à parte)
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # noqa: F405
