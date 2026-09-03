@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0 (bootstrap) executado em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0 e M1 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -70,16 +70,19 @@ pytest 2/2; ruff e eslint limpos; `frontend-build` compilando; compose validado.
 Python do host sem `ensurepip`/sudo → deps em `backend/.pylibs` (pip --target); pnpm requer XDG
 dirs locais (gitignorados).
 
-### M1 — Contas, autenticação e RBAC
+### M1 — Contas, autenticação e RBAC  ✅ (03/09/2026)
 **Referências:** docs 02 (backlog P0), 03 §4 (`accounts`), 04, 06 (User/Role/Permission), 07 §2, 11; ADR-009; US do backlog técnico P0.
+**Decisões:** `AUTH_USER_MODEL` = `accounts.User` customizado (login por e-mail) definido antes da primeira migração (dev DB regenerado no M1); escopo organizacional refinado no M2.
 
-- [ ] Modelos `User`, `Role`, `Permission` + seed dos **5 perfis** (Laboratório, Revendedor, Farmácia, Técnico, Paciente — doc 04).
-- [ ] JWT com access + refresh (login/refresh/logout/me); rotação e revogação de refresh (doc 11).
-- [ ] Bloqueio após tentativas inválidas (`MAX_LOGIN_ATTEMPTS=5`) e rate limit (`RATE_LIMIT_PER_HOUR=100`) parametrizados (doc 11 §2).
-- [ ] Framework de RBAC no backend (permissões por perfil + escopo organizacional, doc 04 §3-4); base para evitar IDOR.
-- [ ] Auditoria mínima de segurança: login, falha de login, bloqueio, criação/edição de usuário, alteração de permissão (doc 11 §5).
-- [ ] Testes RBAC (doc 14 §3): acesso cruzado entre perfis retorna 403.
+- [x] Modelos `User`, `Role`, `Permission` + seed dos **5 perfis** (Laboratório, Revendedor, Farmácia, Técnico, Paciente — doc 04).
+- [x] JWT com access + refresh (login/refresh/logout/me); rotação e revogação de refresh (doc 11).
+- [x] Bloqueio após tentativas inválidas (`MAX_LOGIN_ATTEMPTS=5`) e rate limit (`RATE_LIMIT_PER_HOUR=100`) parametrizados (doc 11 §2).
+- [x] Framework de RBAC no backend (permissões por perfil + escopo organizacional, doc 04 §3-4); base para evitar IDOR.
+- [x] Auditoria mínima de segurança: login, falha de login, bloqueio, criação/edição de usuário, alteração de permissão (doc 11 §5).
+- [x] Testes RBAC (doc 14 §3): acesso cruzado entre perfis retorna 403.
 
+
+**Resultado (03/09/2026):** pytest **24/24** (auth, rotação/blacklist, lockout, RBAC, seed idempotente); ruff limpo; smoke HTTP OK (login lab 200 com permissões; paciente → /users 403; lab cria técnico 201; lockout 401x4 → 423). Usuários demo de dev: lab@coleta.local, paciente@coleta.local, admin@coleta.local (senha SenhaForte123!). Nota DRF 3.16: AuthenticationFailed é tratado como 403 — usar exceções próprias com status_code explícito (services.InvalidCredentials / AccountLocked).
 **Critério de saída:** CRUD de usuários restrito por perfil; todos os testes RBAC verdes; DoD completo.
 
 ### M2 — Cadastros organizacionais (Laboratório, Revendedor, Farmácia, Técnico, Paciente)

@@ -1,5 +1,6 @@
 """Configurações base do projeto (compartilhadas por todos os ambientes)."""
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -26,11 +27,16 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # terceiros
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     # apps do domínio (monolito modular — doc 03 §3)
+    "apps.accounts",
     "apps.core",
     "apps.audit",
 ]
+
+# Usuário customizado do domínio (doc 06 — User com email/phone/document/role)
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -94,16 +100,45 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# DRF — autenticação/autorização reais entram no M1 (RBAC/JWT)
+# Segurança parametrizada (doc 11 §2)
+MAX_LOGIN_ATTEMPTS = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
+LOCKOUT_SECONDS = int(os.getenv("LOCKOUT_MINUTES", "15")) * 60
+RATE_LIMIT_PER_HOUR = int(os.getenv("RATE_LIMIT_PER_HOUR", "100"))
+LOGIN_RATE_PER_MINUTE = int(os.getenv("LOGIN_RATE_PER_MINUTE", "10"))
+
+# DRF — JWT + RBAC no backend (doc 11; ADR-009: frontend nunca é fonte de verdade)
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": f"{RATE_LIMIT_PER_HOUR}/hour",
+        "user": f"{RATE_LIMIT_PER_HOUR}/hour",
+        "login": f"{LOGIN_RATE_PER_MINUTE}/minute",
+    },
+    "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+}
+
+# JWT (simplejwt) — doc 11 §1/§3: refresh com rotação e blacklist
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.getenv("JWT_ACCESS_MINUTES", "30"))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.getenv("JWT_REFRESH_DAYS", "7"))),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "UPDATE_LAST_LOGIN": True,
 }
 
 # CORS (doc 13 §4)
