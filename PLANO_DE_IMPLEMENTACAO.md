@@ -176,7 +176,8 @@ dirs locais (gitignorados).
 - [x] Encaminhamento para humano quando a confiança for baixa (doc 08 §6).
 - [x] IA **proibida** de enviar orçamento final, confirmar preço/pagamento/disponibilidade/coleta (doc 08 §4) — garantido por regras no backend, não no prompt.
 
-**Resultado (03/09/2026):** pytest **85/85**; ruff limpo; frontend build OK. Webhook `/api/v1/webhooks/whatsapp` idempotente; apps ai (DeepSeek + mock + schema doc 08) e whatsapp (conversas/mensagens); **simulador de webchat** em `/whatsapp-simulator` (frontend) para homologação interna; IA cria solicitação + RASCUNHO (nunca final).
+**Resultado (03/09/2026):** pytest **86/86**; ruff limpo; frontend build OK. Webhook `/api/v1/webhooks/whatsapp` idempotente; apps ai (DeepSeek + mock + schema doc 08) e whatsapp (conversas/mensagens); **simulador de webchat** em `/whatsapp-simulator` (frontend) para homologação interna; IA cria solicitação + RASCUNHO (nunca final).
+  - **Pós-M8 (homologação, 03/09 — commit 08ae5ad):** botão **"Limpar memória"** no simulador → `DELETE /whatsapp/conversations/by-phone/{phone}` (apaga mensagens, reabre conversa, auditoria `whatsapp.memory_cleared`); demo externa servida em **modo produção** via túnel Cloudflare (dev do Next bloqueia origem cruzada).
 
 **Critério de saída:** conversa gera solicitação/protocolo válido (RF-022); saída de IA inválida é rejeitada pelo schema; duplicidade tratada (CT-INT-008).
 
