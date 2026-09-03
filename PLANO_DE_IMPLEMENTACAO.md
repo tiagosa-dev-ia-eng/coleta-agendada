@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0 e M1 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0, M1 e M2 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -82,15 +82,18 @@ dirs locais (gitignorados).
 - [x] Testes RBAC (doc 14 §3): acesso cruzado entre perfis retorna 403.
 
 
-**Resultado (03/09/2026):** pytest **24/24** (auth, rotação/blacklist, lockout, RBAC, seed idempotente); ruff limpo; smoke HTTP OK (login lab 200 com permissões; paciente → /users 403; lab cria técnico 201; lockout 401x4 → 423). Usuários demo de dev: lab@coleta.local, paciente@coleta.local, admin@coleta.local (senha SenhaForte123!). Nota DRF 3.16: AuthenticationFailed é tratado como 403 — usar exceções próprias com status_code explícito (services.InvalidCredentials / AccountLocked).
+**Resultado (03/09/2026):** pytest **23/23** (auth, rotação/blacklist, lockout, RBAC, seed idempotente); ruff limpo; smoke HTTP OK (login lab 200 com permissões; paciente → /users 403; lab cria técnico 201; lockout 401x4 → 423). Usuários demo de dev: lab@coleta.local, paciente@coleta.local, admin@coleta.local (senha SenhaForte123!). Nota DRF 3.16: AuthenticationFailed é tratado como 403 — usar exceções próprias com status_code explícito (services.InvalidCredentials / AccountLocked).
 **Critério de saída:** CRUD de usuários restrito por perfil; todos os testes RBAC verdes; DoD completo.
 
-### M2 — Cadastros organizacionais (Laboratório, Revendedor, Farmácia, Técnico, Paciente)
+### M2 — Cadastros organizacionais (Laboratório, Revendedor, Farmácia, Técnico, Paciente)  ✅ (03/09/2026)
 **Referências:** docs 04, 06, 07 §9; US-014, US-015, US-017, US-018.
+**Decisões:** vínculos laboratório/revendedor definidos **apenas pelo backend via contexto** da view (nunca aceitos do cliente); criação de perfil cria usuário+entidade juntos (auditado); farmácia/técnico enxergam somente o próprio registro (menor privilégio).
 
-- [ ] Apps `organizations`, `patients`, `technicians` com modelos e relacionamentos do doc 06 §2-3 (Laboratory, Reseller, Pharmacy, Technician, Patient).
-- [ ] Endpoints `/api/v1/laboratories|resellers|pharmacies|technicians|patients` com escopo de visão por perfil (menor privilégio).
-- [ ] Regras de vínculo: revendedor cadastra farmácia/técnico da própria rede; farmácia vinculada ao laboratório (doc 04).
+- [x] Apps `organizations`, `patients`, `technicians` com modelos e relacionamentos do doc 06 §2-3 (Laboratory, Reseller, Pharmacy, Technician, Patient).
+- [x] Endpoints `/api/v1/laboratories|resellers|pharmacies|technicians|patients` com escopo de visão por perfil (menor privilégio).
+- [x] Regras de vínculo: revendedor cadastra farmácia/técnico da própria rede; farmácia vinculada ao laboratório (doc 04).
+
+**Resultado (03/09/2026):** pytest **40/40**; ruff limpo; smoke HTTP OK (lab cria revendedor/farmácia/técnico/paciente; revendedor cria farmácia da própria rede e lista só as suas; escopo entre laboratórios isolado). Apps: organizations, technicians, patients (migrações 0001).
 
 **Critério de saída:** cadastros operacionais por perfil conforme matriz do doc 04 §2, com testes de permissão.
 

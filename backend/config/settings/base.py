@@ -31,6 +31,9 @@ INSTALLED_APPS = [
     "corsheaders",
     # apps do domínio (monolito modular — doc 03 §3)
     "apps.accounts",
+    "apps.organizations",
+    "apps.technicians",
+    "apps.patients",
     "apps.core",
     "apps.audit",
 ]
