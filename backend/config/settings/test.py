@@ -12,6 +12,9 @@ DATABASES = {
 }
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
+# testes nunca chamam a IA real (sem chave -> mock determinístico)
+DEEPSEEK_API_KEY = ""
+
 import tempfile  # noqa: E402
 
 # anexos de teste em diretório temporário (não poluir backend/media do dev)
