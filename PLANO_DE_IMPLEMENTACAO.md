@@ -1,7 +1,7 @@
 # Plano de Implementação — Coleta Agendada
 
 **Versão:** 1.1
-**Status:** M0–M4 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
+**Status:** M0–M5 executados em 03/09/2026 — revisão do usuário pendente; próximos marcos aguardando validação
 **Fonte de definição:** pacote `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18 + consolidado)
 
 Este plano organiza a implementação do projeto em **marcos (M0–M11)**, cada um com escopo, documentos de referência, entregáveis e critérios de saída. Ele **não substitui** a documentação técnica: para detalhes de cada área, consulte os documentos numerados (ver mapa no `AGENTS.md`).
@@ -126,14 +126,17 @@ dirs locais (gitignorados).
 
 **Critério de saída:** CT-INT-001, CT-INT-002 e CT-INT-007 verdes; rascunho nunca é enviável.
 
-### M5 — Agendamento e realização da coleta
+### M5 — Agendamento e realização da coleta  ✅ (03/09/2026)
 **Referências:** docs 02 (RF-010..013), 05, 06 (Appointment), 07 §6; US-008, US-010..012; CT-INT-003/004/005; doc 04 §2 (agenda por perfil).
+**Nota:** endpoint `reschedule` NÃO implementado — adiado até decisão do gate G-09 (reagendamento/política).
 
-- [ ] `Appointment` com modalidades: farmácia/ponto de coleta, domiciliar, laboratório (RF-010).
-- [ ] Confirmação com protocolo, data, horário e local (RF-011); transições `APPROVED → SCHEDULED`.
-- [ ] Agenda por perfil (farmácia e técnico — doc 04 §2) e atribuição de técnico.
-- [ ] Check-in / check-out do técnico (RF-013, P1) e conclusão da coleta (RF-012), com o fluxo **`COMPLETED` independente de pagamento** (ADR-008 — testar CT-INT-005).
-- [ ] Endpoints `appointments` (doc 07 §6). `reschedule` = PROPOSTO → confirmar antes.
+- [x] `Appointment` com modalidades: farmácia/ponto de coleta, domiciliar, laboratório (RF-010).
+- [x] Confirmação com protocolo, data, horário e local (RF-011); transições `APPROVED → SCHEDULED`.
+- [x] Agenda por perfil (farmácia e técnico — doc 04 §2) e atribuição de técnico.
+- [x] Check-in / check-out do técnico (RF-013, P1) e conclusão da coleta (RF-012), com o fluxo **`COMPLETED` independente de pagamento** (ADR-008 — testar CT-INT-005).
+- [x] Endpoints `appointments` (doc 07 §6). `reschedule` = PROPOSTO → confirmar antes.
+
+**Resultado (03/09/2026):** pytest **67/67**; ruff limpo; smoke OK (agenda lab; domiciliar farmácia/técnico; conclusão SEM pagamento). App scheduling (Appointment + código AP-…); `reschedule` pendente do gate G-09.
 
 **Critério de saída:** CT-INT-003/004/005 verdes; conclusão com pagamento pendente permitida.
 
