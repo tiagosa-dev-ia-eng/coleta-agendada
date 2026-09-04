@@ -6,6 +6,7 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.25 | 04/09/2026 | feat(login-demo): cartões de acesso direto de demonstração com 1 clique para Paciente, Laboratório, Farmácia, Técnico e Revendedor no /login. |
 | 1.1.24 | 04/09/2026 | feat(preview-contacts-gps): preview interativo multi-perfil, canais oficiais WhatsApp (F-07) em Laboratório e Farmácia, busca por GPS no simulador (F-09) e sincronização geral. |
 | 1.1.23 | 04/09/2026 | docs: parâmetros de IA oficiais (B-07) + .env.example. |
 | 1.1.22 | 04/09/2026 | feat(quotations): validade do orçamento de 15 dias (expiração automática após 15 dias). |
