@@ -13,10 +13,11 @@ Cada demanda é implementada em **commit separado** que documenta a demanda aten
 
 Texto original: *"Mandar localização para farmacia/laboratior (local de coleta) mas proxima"*.
 Definição refinada (usuário, 04/09/2026): o paciente manda a localização e o
-chatbot devolve o **local de coleta mais próximo** — no domínio atual, o
-"local de coleta" é a **farmácia/ponto de coleta** da rede (doc 06). Unidade
-do laboratório como ponto de coleta = evolução futura (exigiria coordenadas
-em "Laboratory").
+chatbot devolve o **local de coleta mais próximo**. **Ponto de coleta pode
+ser: (1) uma farmácia ou (2) um laboratório** (decisão do usuário) — o
+chatbot compara a distância do laboratório do canal e das farmácias da rede
+com coordenadas cadastradas e responde o mais próximo, identificando o tipo
+("é a farmácia X…" / "é o laboratório Y…").
 
 Contexto no sistema atual:
 
@@ -28,13 +29,15 @@ Contexto no sistema atual:
 ### Perguntas de domínio (respondidas pelo usuário — 04/09/2026)
 
 - **Fluxo:** o paciente manda a localização e **o chatbot devolve o local de
-  coleta (farmácia/ponto de coleta) mais próximo** — resposta direta no chat;
-  interação pelo canal WhatsApp + IA / simulador do M8.
-- **Cálculo de "mais próximo":** farmácias **ativas da rede do laboratório do
-  canal** ("conv.laboratory") com latitude/longitude cadastradas; distância
-  Haversine (km). Cadastro das coordenadas via API/admin/"Pharmacy.latitude"
-  e "Pharmacy.longitude" (novos campos). CEP como fallback/geocodificação:
-  evolução futura.
+  coleta mais próximo** — resposta direta no chat; interação pelo canal
+  WhatsApp + IA / simulador do M8.
+- **Cálculo de "mais próximo":** candidatos = **laboratório do canal** (se
+  tiver coordenadas) **+ farmácias ativas da rede** ("conv.laboratory") com
+  latitude/longitude cadastradas; distância Haversine (km), menor vence;
+  resposta identifica o tipo do ponto. Cadastro das coordenadas via
+  API/admin: "Pharmacy.latitude/longitude" e "Laboratory.latitude/longitude"
+  (novos campos + endereço/cidade/UF/CEP do laboratório). CEP como
+  fallback/geocodificação: evolução futura.
 
 ### Regra implementada
 
@@ -45,8 +48,8 @@ Contexto no sistema atual:
    **determinística (sem LLM)** — sem custo e sem risco de alucinação.
 3. Paciente pergunta pela farmácia mais próxima **sem enviar localização**:
    o chatbot pede para compartilhar a localização (não escala a humano).
-4. Sem farmácia georreferenciada na rede: **encaminha a humano** (não inventa
-   ponto de coleta — AGENTS.md regras 1 e 10).
+4. Sem ponto de coleta (farmácia ou laboratório) georreferenciado na rede:
+   **encaminha a humano** (não inventa ponto de coleta — AGENTS.md regras 1 e 10).
 5. Frontend: simulador ganhou envio de localização (demo) e sugestão de
    pergunta. Cadastro de coordenadas na tela de farmácias: evolução (hoje API).
 

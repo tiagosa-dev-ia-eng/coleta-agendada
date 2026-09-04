@@ -10,7 +10,12 @@ from decimal import Decimal
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.organizations.geolocation import haversine_km, nearest_pharmacies, parse_coordinates
+from apps.organizations.geolocation import (
+    haversine_km,
+    nearest_collection_points,
+    nearest_pharmacies,
+    parse_coordinates,
+)
 from apps.organizations.models import Pharmacy
 from apps.whatsapp.models import WhatsAppConversation
 
@@ -187,3 +192,43 @@ def test_location_message_idempotent(make_user):
     r2 = _send(env["patient"], "", message_id=mid, location=location)
     assert r2.status_code == 200
     assert WhatsAppConversation.objects.get(phone=PHONE).messages.count() == count
+
+
+def test_laboratory_can_be_nearest_collection_point(make_user):
+    """D-01: ponto de coleta = farmácia OU laboratório (decisão usuário)."""
+    env = _env(make_user)
+    lab = env["lab"]
+    lab.address = "Av. Central, 1"
+    lab.city = "São Paulo"
+    lab.state = "SP"
+    lab.latitude = Decimal(str(REF_LAT + 0.0005))
+    lab.longitude = Decimal(str(REF_LON + 0.0005))
+    lab.save()
+    _add_pharmacy(
+        make_user, lab, name="Farmácia Distante", lat=REF_LAT - 0.3, lon=REF_LON - 0.3
+    )
+    resp = _send(
+        env["patient"], "", location={"latitude": REF_LAT, "longitude": REF_LON}
+    )
+    assert resp.status_code == 200
+    conv = WhatsAppConversation.objects.get(phone=PHONE)
+    reply = _last_outbound(conv).content
+    assert "o laboratório Lab D-01" in reply
+    assert "km" in reply
+    assert "Farmácia Distante" not in reply
+
+
+def test_nearest_collection_points_mixes_lab_and_pharmacy(make_user):
+    """Ordem por proximidade inclui laboratório e farmácias da rede."""
+    env = _env(make_user)
+    lab = env["lab"]
+    lab.latitude = Decimal(str(REF_LAT - 0.4))
+    lab.longitude = Decimal(str(REF_LON - 0.4))
+    lab.save()
+    _add_pharmacy(make_user, lab, name="Farmácia Perto", lat=REF_LAT + 0.001, lon=REF_LON + 0.001)
+    ranked = nearest_collection_points(lab.pk, REF_LAT, REF_LON, limit=3)
+    assert ranked[0][1] == "pharmacy"
+    assert ranked[0][2].name == "Farmácia Perto"
+    assert ranked[0][0] < ranked[1][0]
+    kinds = {kind for _, kind, _ in ranked}
+    assert kinds == {"pharmacy", "laboratory"}

@@ -16,7 +16,7 @@ from apps.ai.mock import catalog_hint, mock_analyze
 from apps.ai.schema import ExtractionError, normalize_extraction
 from apps.audit.models import record as audit_record
 from apps.organizations.geolocation import (
-    nearest_pharmacies,
+    nearest_collection_points,
     parse_coordinates,
     valid_coordinates,
 )
@@ -353,12 +353,12 @@ class WhatsAppService:
     def _nearest_pharmacy(extraction, conv):
         """D-01: devolve o local de coleta mais próximo da localização.
 
-        O local de coleta do domínio é hoje a farmácia/ponto de coleta da rede
-        do laboratório do canal (conv.laboratory), ativa e com coordenadas
-        cadastradas. Sem localização válida, pede o compartilhamento; sem ponto
-        georreferenciado, encaminha a humano (não inventa ponto de coleta —
-        regras 1/10 do AGENTS.md). Unidade do laboratório como ponto de coleta:
-        evolução futura (exigiria coordenadas em Laboratory).
+        Ponto de coleta do domínio = farmácia OU laboratório (decisão do
+        usuário 04/09/2026): busca o laboratório do canal (se tiver
+        coordenadas) e as farmácias ativas com coordenadas da rede
+        (conv.laboratory). Sem localização válida, pede o compartilhamento;
+        sem ponto georreferenciado, encaminha a humano (não inventa ponto de
+        coleta — regras 1/10 do AGENTS.md).
         """
         location = extraction.get("location") or {}
         lat, lon = location.get("latitude"), location.get("longitude")
@@ -376,7 +376,7 @@ class WhatsAppService:
                 "Ainda não identifiquei o laboratório deste canal. "
                 "Um atendente humano vai te ajudar a escolher o ponto de coleta."
             )
-        ranked = nearest_pharmacies(lab.pk, float(lat), float(lon), limit=1)
+        ranked = nearest_collection_points(lab.pk, float(lat), float(lon), limit=1)
         if not ranked:
             conv.status = "human"
             conv.save(update_fields=["status"])
@@ -385,13 +385,16 @@ class WhatsAppService:
                 "localização cadastrada neste momento. Um atendente humano vai "
                 "te indicar o local de coleta mais próximo em instantes."
             )
-        distance_km, pharmacy = ranked[0]
-        parts = [part for part in (pharmacy.address, pharmacy.city, pharmacy.state) if part]
+        distance_km, kind, point = ranked[0]
+        if kind == "laboratory":
+            subject = f"o laboratório {point.name}"
+        else:
+            subject = f"a farmácia {point.name}"
+        parts = [part for part in (point.address, point.city, point.state) if part]
         where = (" — " + ", ".join(parts)) if parts else ""
         return (
-            f"O local de coleta mais próximo da sua localização é a farmácia "
-            f"{pharmacy.name}{where} (a cerca de "
-            f"{WhatsAppService._fmt_km(distance_km)} km). Posso agendar a "
-            "coleta nesse ponto para você? É só me dizer qual exame e em qual "
-            "período prefere."
+            f"O local de coleta mais próximo da sua localização é {subject}"
+            f"{where} (a cerca de {WhatsAppService._fmt_km(distance_km)} km). "
+            "Posso agendar a coleta nesse ponto para você? É só me dizer qual "
+            "exame e em qual período prefere."
         )

@@ -80,3 +80,48 @@ def nearest_pharmacies(laboratory_id, latitude, longitude, *, limit=1):
         ranked.append((d, pharmacy))
     ranked.sort(key=lambda item: item[0])
     return ranked[: max(1, int(limit))]
+
+
+def nearest_collection_points(laboratory_id, latitude, longitude, *, limit=1):
+    """Locais de coleta mais próximos da rede (D-01: farmácia OU laboratório).
+
+    Candidatos: o laboratório do canal (se tiver coordenadas) e as farmácias
+    ativas com coordenadas da rede. Retorna lista de tuplas
+    (distancia_km, kind, objeto), ordenada por proximidade; kind é
+    "laboratory" ou "pharmacy".
+    """
+    from apps.organizations.models import Laboratory
+
+    if not valid_coordinates(latitude, longitude):
+        return []
+    candidates = []
+    lab = (
+        Laboratory.objects.filter(pk=laboratory_id).first()
+        if laboratory_id is not None
+        else None
+    )
+    if (
+        lab is not None
+        and lab.latitude is not None
+        and lab.longitude is not None
+    ):
+        candidates.append(("laboratory", lab))
+    for pharmacy in (
+        Pharmacy.objects.filter(
+            laboratory_id=laboratory_id,
+            status=STATUS_ACTIVE,
+            latitude__isnull=False,
+            longitude__isnull=False,
+        )
+        .order_by("name")
+        .only("name", "address", "city", "state", "latitude", "longitude")
+    ):
+        candidates.append(("pharmacy", pharmacy))
+    ranked = []
+    for kind, obj in candidates:
+        d = haversine_km(
+            latitude, longitude, float(obj.latitude), float(obj.longitude)
+        )
+        ranked.append((d, kind, obj))
+    ranked.sort(key=lambda item: item[0])
+    return ranked[: max(1, int(limit))]

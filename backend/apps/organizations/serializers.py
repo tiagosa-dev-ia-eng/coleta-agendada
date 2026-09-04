@@ -12,7 +12,20 @@ User = get_user_model()
 class LaboratorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Laboratory
-        fields = ["id", "name", "document", "status", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "name",
+            "document",
+            "address",
+            "city",
+            "state",
+            "zip_code",
+            "latitude",
+            "longitude",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
