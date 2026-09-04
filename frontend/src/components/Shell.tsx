@@ -60,41 +60,68 @@ export default function Shell({ children, title }: { children: ReactNode; title?
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900">
-      <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/95 backdrop-blur-sm shadow-2xs">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div>
-            <p className="text-base font-black tracking-tight text-emerald-700">Coleta Agendada</p>
-            <p className="text-xs font-medium text-zinc-500">{title ?? (me?.role?.name ?? "…")}</p>
-          </div>
-          {me && (
-            <div className="flex items-center gap-3 text-sm">
-              <span className="hidden text-zinc-600 sm:block">
-                {me.name || me.email} · <b className="text-zinc-900">{ROLE_LABEL[me.role?.code ?? ""] ?? me.role?.name}</b>
-              </span>
-              <button
-                type="button"
-                onClick={clearToken}
-                aria-label="Sair da conta e voltar ao login"
-                title="Sair da conta e voltar ao login"
-                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/80 px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 active:scale-[0.98] cursor-pointer shadow-2xs"
-              >
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-                <span>Sair</span>
-              </button>
+      <header className="sticky top-0 z-40 border-b border-zinc-200/90 bg-white/95 backdrop-blur-md shadow-xs">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+          {/* Logo + Título do Sistema e Subtítulo da Página */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 font-bold text-white shadow-xs text-sm">
+              CA
             </div>
-          )}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-extrabold tracking-tight text-zinc-900 text-sm sm:text-base">
+                  Coleta Agendada
+                </span>
+                {title && (
+                  <span className="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800 truncate">
+                    {title}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Dados do Usuário Ativo e Botão de Logout */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {me && (
+              <div className="hidden md:flex items-center gap-2.5 text-right pl-3 border-l border-zinc-200">
+                <div className="text-xs">
+                  <p className="font-bold text-zinc-900 truncate max-w-[180px]">
+                    {me.name || me.email}
+                  </p>
+                  <p className="text-[11px] font-medium text-zinc-500">
+                    {ROLE_LABEL[me.role?.code ?? ""] ?? me.role?.name}
+                  </p>
+                </div>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold ring-2 ring-emerald-500/20">
+                  {(me.name || me.email || "U").slice(0, 2).toUpperCase()}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={clearToken}
+              aria-label="Sair da conta e voltar ao login"
+              title="Sair da conta e voltar ao login"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/90 px-3 py-1.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100 active:scale-[0.98] cursor-pointer shadow-2xs"
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>Sair</span>
+            </button>
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 space-y-4 px-4 py-6">{children}</main>

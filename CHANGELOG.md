@@ -6,6 +6,7 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.29 | 04/09/2026 | fix(header): unificação e correção do header da página (Shell.tsx) com logo CA, breadcrumb de título, dados do usuário e botão de logout, eliminando duplicação visual e conflito sticky no preview. |
 | 1.1.28 | 04/09/2026 | feat(auth-nav): botões de logout globais e melhorias na navegação do formulário de login (v1.1.28) + sincronização com backend v1.1.27. |
 | 1.1.27 | 04/09/2026 | chore(collection_points): nova linha final em services.py. |
 | 1.1.26 | 04/09/2026 | feat(auth-nav): botões de logout explícitos no Shell e na barra de topo, seletor de categorias demo e navegação aperfeiçoada no formulário de login (chips rápidos, toggle de senha, atalhos). |
