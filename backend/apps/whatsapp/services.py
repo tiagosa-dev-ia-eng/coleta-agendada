@@ -21,6 +21,7 @@ from apps.organizations.geolocation import (
     valid_coordinates,
 )
 from apps.whatsapp.models import Direction, WhatsAppConversation, WhatsAppMessage
+from apps.whatsapp.validators import normalize_phone_digits
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ PROTOCOL_RE = re.compile(r"CA-\d{8}-[A-F0-9]{6}", re.IGNORECASE)
 
 
 def normalize_phone(value):
-    return re.sub(r"\D", "", str(value or ""))
+    return normalize_phone_digits(value)
 
 
 def _first_lab():

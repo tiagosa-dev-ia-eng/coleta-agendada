@@ -9,6 +9,7 @@ Cada demanda é implementada em **commit separado** que documenta a demanda aten
 | D-01 | Mandar localização para farmácia/laboratório (local de coleta) mais próxima | Alinhamento com cliente; toca item PENDENTE "geolocalização" (doc 02) | Implementada (04/09/2026) — chatbot devolve a farmácia mais próxima |
 | D-02 | No perfil paciente, mostrar publicidade das farmácias ou fornecedores | Alinhamento com cliente | Aguardando definição de regra de domínio |
 | D-03 | Ponto de coleta: farmácia pode ou não ser ponto; ponto recebe agendamento, tem horário de funcionamento, técnico responsável e controle aberto/fechado | Alinhamento com cliente | Definição recebida (04/09/2026) — aguardando detalhes de implementação |
+| D-04 | Contatos WhatsApp por perfil (BSUID @<nome> Meta): técnico e revenda com 1 número/nome; farmácia e laboratório com lista de números/nomes de contato | Alinhamento com cliente | Definição recebida (04/09/2026) — implementação em andamento |
 
 ## D-01 — Mandar localização para farmácia/laboratório (local de coleta) mais próxima
 
@@ -92,3 +93,17 @@ Contexto atual (pré-implementação):
 - (preencher: laboratório também usa o mesmo flag? vínculo de técnicos por
   ponto/escala; aplicação da disponibilidade no agendamento; filtro de
   aberto/fechado na resposta D-01; granularidade do horário de funcionamento)
+
+## D-04 — Contatos WhatsApp por perfil (BSUID Meta)
+
+Definição recebida (04/09/2026): incluir nos modelos os contatos de WhatsApp
+no padrão da Meta — número + nome de exibição + BSUID ("@<nome usuário>"):
+
+- **Técnico:** número/nome do WhatsApp (obedecendo ao BSUID @<nome usuário>);
+- **Farmácia:** lista de números/nomes do WhatsApp de contato;
+- **Laboratório:** lista de números/nomes do WhatsApp de contato;
+- **Revenda:** número/nome do WhatsApp.
+
+Implementação: entidade compartilhada `WhatsAppContact` (apps.whatsapp) com
+vínculo único a um dos perfis (técnico/revenda: no máx. 1; farmácia/laboratório:
+vários) — serve de base para notificações/canais (G-05).
