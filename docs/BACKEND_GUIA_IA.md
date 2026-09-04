@@ -89,21 +89,35 @@ comissão por regra versionada sem recálculo silencioso (detalhes no AGENTS.md 
 
 ---
 
-## 4. Georreferenciamento e local de coleta (D-01)
+## 4. Local de coleta (CollectionPoint) e geolocalização (D-01/D-03)
 
-Ponto de coleta = **farmácia OU laboratório** (decisão do usuário 04/09/2026).
+Ponto de coleta é **entidade de 1º nível** em `apps.collection_points`
+(decisão D-03): hospedada por farmácia OU laboratório (cada um pode ou não ser
+ponto). A **localização pertence ao ponto** — Pharmacy/Laboratory não carregam
+coordenadas (migração organizations 0004).
 
-- Campos de localização (Decimal, nullable; migrações 0002/0003 de organizations):
-  `Laboratory` e `Pharmacy` têm `address, city, state, zip_code, latitude, longitude`.
-- `apps/organizations/geolocation.py`:
-  - `haversine_km(lat1, lon1, lat2, lon2)` — distância em km;
-  - `valid_coordinates(lat, lon)` — faixas ±90/±180;
-  - `parse_coordinates(text)` — extrai par "lat, lon" de texto (exige decimal/sinal para evitar falso-positivo);
-  - `nearest_pharmacies(lab_id, lat, lon, limit)` — farmácias ativas com coordenadas;
-  - `nearest_collection_points(lab_id, lat, lon, limit)` — **unifica** laboratório (com coordenadas) + farmácias ativas; retorna `[(dist_km, kind, obj)]`, `kind ∈ {"laboratory","pharmacy"}`.
-- Cadastro das coordenadas: API (`LaboratorySerializer`/`PharmacyCreateSerializer`),
-  admin Django. Geocodificação por CEP e mapas: **evolução futura**.
-- Atualizar este item SEMPRE que modelos/serviços de geolocalização mudarem.
+- `CollectionPoint`: kind `pharmacy|laboratory`, laboratory da rede,
+  pharmacy anfitriã (kind pharmacy), endereço/CEP/coordenadas próprios,
+  `is_open`, status.
+- `OpeningWindow`: grade semanal de janelas (weekday 0=seg..6=dom,
+  open_time/close_time).
+- `TechnicianAssignment`: designação de técnico FEITA PELO LABORATÓRIO.
+- `CollectionPointSession`: check-in (abrir)/check-out (fechar) pelo técnico
+  designado — estado `is_open` + auditoria.
+- `apps/collection_points/services.py`: `check_schedule_availability`
+  (janela + fechado hoje), `open_point`/`close_point`, `schedule_summary`
+  (grade agrupada p/ texto) e `open_state_label`.
+- `apps/collection_points/geolocation.py`: `haversine_km`,
+  `valid_coordinates`, `parse_coordinates` e
+  `nearest_collection_points(lab_id, lat, lon, limit)` → pontos ATIVOS com
+  coordenadas; retorna `[(dist_km, kind, point)]`.
+- **Agendamento em ponto** (AppointmentService): exige ponto ativo e
+  disponibilidade (D-03). Domiciliar não usa ponto.
+- **Chatbot (D-01):** responde o ponto mais próximo com endereço, distância,
+  **horário** e estado (aberto/fechado), sem LLM; sem ponto georreferenciado →
+  humano.
+- Cadastro/operação via API `/api/v1/collection-points…` (ver §6).
+  Geocodificação por CEP e mapas: **evolução futura**.
 
 ---
 
@@ -116,7 +130,7 @@ Caminho: `POST /api/v1/webhooks/whatsapp` → `whatsapp.views.InboundWhatsAppVie
 2. **Idempotência:** `provider_message_id` repetido não reprocessa (CT-INT-008).
 3. Grava mensagem inbound.
 4. Decisão do caminho:
-   - **Localização presente** (payload `location: {latitude, longitude}` ou texto "lat, lon") → extração determinística `intent=nearest_pharmacy` **sem LLM**;
+   - **Localização presente** (payload `location: {latitude, longitude}` ou texto "lat, lon") → extração determinística `intent=nearest_pharmacy` **sem LLM** (resolve via `nearest_collection_points` — CollectionPoint);
    - pergunta por local de coleta sem localização (heurística de termos) → pede compartilhamento;
    - senão → `DeepSeek` (ou `mock_analyze` sem chave) + `normalize_extraction` (schema) → `_act`.
 5. Responde com mensagem outbound e audita (`whatsapp.message_processed`).
@@ -138,6 +152,8 @@ confirma dados; rascunho gerado por IA sempre passa por validação humana.
   com escopo imposto pelo contexto da view (lab/revendedor nunca vêm do cliente).
 - Webhook WhatsApp: `POST /api/v1/webhooks/whatsapp` aceita `from` + `body`
   **ou** `from` + `location`; `GET/DELETE /api/v1/whatsapp/conversations/by-phone/{phone}`.
+- Locais de coleta: `/api/v1/collection-points` (CRUD, `windows`, `technicians`,
+  `open`/`close`); contatos WhatsApp: `/api/v1/whatsapp/contacts` (D-04).
 
 ---
 
@@ -198,3 +214,8 @@ backend/
 | 04/09/2026 | Criação deste guia vivo + atualização de AGENTS.md/README/PLANO/docs (02, 06, 07, 08 + adendo no consolidado) conforme D-01. | este arquivo |
 | 04/09/2026 | **D-03 (base):** app `collection_points` criado — `CollectionPoint` (kind pharmacy/laboratory, localização própria, `is_open`), `OpeningWindow` (grade semanal), `TechnicianAssignment` (designação pelo laboratório), `CollectionPointSession` (check-in/out); serviços de disponibilidade e abertura/fechamento. Integração (agendamento/chatbot) em andamento. | §2 |
 | 04/09/2026 | **D-04:** `WhatsAppContact` (número + nome + BSUID Meta `@handle`) por perfil — técnico/revenda máx. 1; farmácia/laboratório lista; validators `normalize_phone_digits`/`validate_meta_bsuid`. | §2 (whatsapp) |
+| 04/09/2026 | **D-03 (API/operação):** `collection-points` CRUD + janelas + designação + open/close (`8648461`). | §4, §6 |
+| 04/09/2026 | **D-03 (agendamento):** AppointmentService exige ponto ativo e disponibilidade — janela + fechado hoje (`38fe807`). | §4 |
+| 04/09/2026 | **D-03 (geoloc/chatbot):** geolocalização migra p/ CollectionPoint; Pharmacy/Laboratory sem coordenadas (migração orgs 0004); chatbot responde ponto + horário + estado (`02d96c4`). | §4, §5 |
+| 04/09/2026 | **D-04 (API):** `/api/v1/whatsapp/contacts` com escopo por papel e regra 1 contato p/ técnico/revenda (`f98647a`). | §6 |
+| 04/09/2026 | Documentação (docs 06/07/08, demandas, guia) consolidada para D-03/D-04. | este arquivo |

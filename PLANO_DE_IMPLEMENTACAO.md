@@ -271,7 +271,7 @@ Cada decisão deve ser registrada no doc 15 e marcada como CONFIRMADO/INFERIDO/P
 | G-08 | RN-ORC-004 (invalidação pós-edição) e RN-ORC-005 (versão aprovada) | M4 (regras) | PROPOSTO |
 | G-09 | Reagendamento (`reschedule`), política de cancelamento, validade do orçamento | M5 | PENDENTE |
 | G-10 | Parâmetros de IA: modelo DeepSeek, prompt, temperatura, confiança mínima, fallback, custo | M8 | PENDENTE |
-| G-11 | Geolocalização / local de coleta mais próximo — **DECIDIDO (04/09, demanda D-01): ponto de coleta = farmácia OU laboratório; chatbot devolve o mais próximo (Haversine) a partir das coordenadas de Pharmacy/Laboratory; geocodificação por CEP e mapa = evolução** | M8 (chat) | RESOLVIDO (MVP) |
+| G-11 | Geolocalização / local de coleta — **DECIDIDO (04/09, demandas D-01/D-03): ponto de coleta é entidade `CollectionPoint` (farmácia OU laboratório) com localização própria; chatbot devolve o ponto mais próximo com horário/estado; agendamento respeita disponibilidade (janelas + aberto/fechado pelo técnico); geocodificação por CEP e mapa = evolução** | M5/M8 | RESOLVIDO (MVP) |
 
 > Enquanto um gate PENDENTE não for decidido, o marco correspondente avança com a parte **não bloqueada** (ex.: domínio de orçamento antes da origem de preços) ou com **adapter fake** (pagamento, WhatsApp, IA), conforme regra 6 do AGENTS.md.
 

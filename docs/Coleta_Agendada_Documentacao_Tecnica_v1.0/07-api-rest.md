@@ -132,3 +132,37 @@ determinística — ver `docs/demandas.md` D-01 e `docs/BACKEND_GUIA_IA.md`.
 ## 12. Idempotência
 
 **PROPOSTO:** operações de webhook, pagamento e criação de eventos críticos devem aceitar chave de idempotência.
+
+## 13. Locais de coleta e contatos WhatsApp (D-03/D-04)
+
+### Locais de coleta (D-03) — base `/api/v1/collection-points`
+
+```http
+POST   /api/v1/collection-points                 # criar (laboratório/revendedor)
+GET    /api/v1/collection-points                 # lista escopada por perfil
+GET    /api/v1/collection-points/{id}
+PATCH  /api/v1/collection-points/{id}
+POST   /api/v1/collection-points/{id}/windows            # janela (weekday, open_time, close_time)
+DELETE /api/v1/collection-points/{id}/windows/{window_id}
+POST   /api/v1/collection-points/{id}/technicians        # {technician_id} — somente laboratório
+DELETE /api/v1/collection-points/{id}/technicians/{tech_id}
+POST   /api/v1/collection-points/{id}/open               # check-in do técnico designado (abre)
+POST   /api/v1/collection-points/{id}/close              # check-out do técnico designado (fecha)
+```
+
+Ponto de coleta: kind `pharmacy` (exige pharmacy_id da rede) ou
+`laboratory`; cada farmácia/laboratório pode ou não ser ponto. Localização/
+coordenadas pertencem ao ponto. Agendamento em ponto exige ponto ativo e
+disponibilidade (janela semanal e ponto não fechado hoje).
+
+### Contatos WhatsApp (D-04) — base `/api/v1/whatsapp/contacts`
+
+```http
+POST   /api/v1/whatsapp/contacts                 # dono: pharmacy|laboratory|technician|reseller
+GET    /api/v1/whatsapp/contacts
+GET    /api/v1/whatsapp/contacts/{id}
+DELETE /api/v1/whatsapp/contacts/{id}
+```
+
+Técnico e revenda: 1 contato; farmácia e laboratório: lista. Campos:
+`number` (normalizado), `name`, `meta_bsuid` ("@nome.usuario").

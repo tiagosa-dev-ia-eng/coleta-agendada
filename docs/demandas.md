@@ -8,8 +8,8 @@ Cada demanda é implementada em **commit separado** que documenta a demanda aten
 |---|---|---|---|
 | D-01 | Mandar localização para farmácia/laboratório (local de coleta) mais próxima | Alinhamento com cliente; toca item PENDENTE "geolocalização" (doc 02) | Implementada (04/09/2026) — chatbot devolve a farmácia mais próxima |
 | D-02 | No perfil paciente, mostrar publicidade das farmácias ou fornecedores | Alinhamento com cliente | Aguardando definição de regra de domínio |
-| D-03 | Ponto de coleta: farmácia pode ou não ser ponto; ponto recebe agendamento, tem horário de funcionamento, técnico responsável e controle aberto/fechado | Alinhamento com cliente | Definição recebida (04/09/2026) — aguardando detalhes de implementação |
-| D-04 | Contatos WhatsApp por perfil (BSUID @<nome> Meta): técnico e revenda com 1 número/nome; farmácia e laboratório com lista de números/nomes de contato | Alinhamento com cliente | Definição recebida (04/09/2026) — implementação em andamento |
+| D-03 | Ponto de coleta: farmácia pode ou não ser ponto; ponto recebe agendamento, tem horário de funcionamento, técnico responsável e controle aberto/fechado | Alinhamento com cliente | **Implementada (04/09/2026)** — entidade CollectionPoint + API/operação + agendamento + chatbot |
+| D-04 | Contatos WhatsApp por perfil (BSUID @<nome> Meta): técnico e revenda com 1 número/nome; farmácia e laboratório com lista de números/nomes de contato | Alinhamento com cliente | **Implementada (04/09/2026)** — WhatsAppContact + API |
 
 ## D-01 — Mandar localização para farmácia/laboratório (local de coleta) mais próxima
 
@@ -88,11 +88,19 @@ Contexto atual (pré-implementação):
   ativa georreferenciada; com a D-03 deve considerar **apenas pontos de
   coleta** (e a definição do que é ponto).
 
-### Perguntas de domínio (respondidas pelo usuário)
+### Perguntas de domínio (respondidas pelo usuário — 04/09/2026)
 
-- (preencher: laboratório também usa o mesmo flag? vínculo de técnicos por
-  ponto/escala; aplicação da disponibilidade no agendamento; filtro de
-  aberto/fechado na resposta D-01; granularidade do horário de funcionamento)
+1. **Laboratório é opcional** como ponto (mesma estrutura da farmácia).
+2. **Designação de técnico feita pelo laboratório**; o técnico designado faz
+   o check-in (abertura) e check-out (fechamento) do ponto.
+3. **Grade semanal com janelas por dia** (recomendação aceita).
+4. **Agendamento rejeita fora do horário/ponto fechado** (recomendação aceita).
+5. **D-01 responde qualquer local de coleta mais próximo COM horário** —
+   dúvida pré-agendamento (sem filtro por aberto/fechado).
+
+Sugestão do usuário aceita: **entidade própria `CollectionPoint`** (melhor
+manutenção/evolução). A localização pertence ao ponto (campos de coordenadas
+removidos de Pharmacy/Laboratory — migração organizations 0004).
 
 ## D-04 — Contatos WhatsApp por perfil (BSUID Meta)
 

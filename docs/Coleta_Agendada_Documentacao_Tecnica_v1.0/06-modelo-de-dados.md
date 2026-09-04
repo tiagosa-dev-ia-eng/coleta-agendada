@@ -47,12 +47,6 @@ O modelo abaixo é **PROPOSTO** a partir dos requisitos confirmados.
 - status
 - created_at
 - updated_at
-- address
-- city
-- state
-- zip_code
-- latitude
-- longitude
 
 ### Reseller
 - id
@@ -71,8 +65,6 @@ O modelo abaixo é **PROPOSTO** a partir dos requisitos confirmados.
 - city
 - state
 - zip_code
-- latitude
-- longitude
 - status
 
 ### Technician
@@ -245,3 +237,53 @@ erDiagram
 - múltiplos revendedores por farmácia;
 - catálogo global ou por laboratório;
 - preço por exame, região, unidade ou parceiro.
+
+## Locais de coleta e contatos WhatsApp (demandas D-03/D-04)
+
+### CollectionPoint
+- id
+- laboratory_id
+- kind (pharmacy | laboratory)
+- pharmacy_id (quando kind=pharmacy)
+- name
+- address
+- city
+- state
+- zip_code
+- latitude
+- longitude
+- is_open
+- status
+- created_at
+- updated_at
+
+### OpeningWindow
+- id
+- point_id
+- weekday (0=segunda .. 6=domingo)
+- open_time
+- close_time
+
+### TechnicianAssignment
+- id
+- point_id
+- technician_id
+- assigned_by
+- active
+- created_at
+
+### CollectionPointSession
+- id
+- point_id
+- opened_by
+- open_at
+- closed_by
+- closed_at
+
+### WhatsAppContact
+- id
+- owner (exatamente um): pharmacy_id | laboratory_id | technician_id | reseller_id
+- number (normalizado)
+- name
+- meta_bsuid ("@nome.usuario" — Meta)
+- is_main

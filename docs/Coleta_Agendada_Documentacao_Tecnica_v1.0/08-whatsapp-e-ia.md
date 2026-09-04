@@ -74,10 +74,12 @@ A IA não deve:
 Quando o paciente **compartilha a localização** (payload `location` com
 `latitude`/`longitude`, como o WhatsApp envia, ou texto "lat, lon"), o
 pipeline resolve o **local de coleta mais próximo de forma determinística
-(SEM chamada de LLM)**: candidatos = laboratório do canal (com coordenadas)
-e farmácias ativas da rede com coordenadas; vence o de menor distância
-(Haversine). A resposta identifica o tipo ("é a farmácia X…" / "é o
-laboratório Y…"), endereço e distância aproximada.
+(SEM chamada de LLM)**: candidatos = CollectionPoints ATIVOS da rede do
+laboratório do canal com coordenadas — ponto de farmácia OU ponto de
+laboratório (D-03); vence o de menor distância (Haversine). A resposta
+identifica o tipo ("é a farmácia X…" / "é o laboratório Y…"), endereço,
+distância aproximada, **horário de funcionamento** e estado (aberto/fechado) —
+dúvida pré-agendamento.
 
 - Sem localização válida: o chatbot **pede o compartilhamento**.
 - Sem ponto georreferenciado na rede: **encaminha a humano** (não inventa local).
