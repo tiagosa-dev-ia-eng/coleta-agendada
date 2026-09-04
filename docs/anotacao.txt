@@ -1,0 +1,6 @@
+Demandas do alinhamento:
+
+- Mandar localização para farmacia/laboratior (local de coleta) mas proxima 
+
+- No perfil paciente mostrar publicidade das farmacaias ou fornecedores
+
