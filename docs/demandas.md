@@ -8,6 +8,7 @@ Cada demanda é implementada em **commit separado** que documenta a demanda aten
 |---|---|---|---|
 | D-01 | Mandar localização para farmácia/laboratório (local de coleta) mais próxima | Alinhamento com cliente; toca item PENDENTE "geolocalização" (doc 02) | Implementada (04/09/2026) — chatbot devolve a farmácia mais próxima |
 | D-02 | No perfil paciente, mostrar publicidade das farmácias ou fornecedores | Alinhamento com cliente | Aguardando definição de regra de domínio |
+| D-03 | Ponto de coleta: farmácia pode ou não ser ponto; ponto recebe agendamento, tem horário de funcionamento, técnico responsável e controle aberto/fechado | Alinhamento com cliente | Definição recebida (04/09/2026) — aguardando detalhes de implementação |
 
 ## D-01 — Mandar localização para farmácia/laboratório (local de coleta) mais próxima
 
@@ -65,3 +66,29 @@ Contexto no sistema atual:
 ### Perguntas de domínio (respondidas pelo usuário)
 
 - (preencher conforme decisão)
+
+## D-03 — Ponto de coleta (definição)
+
+Definição recebida do cliente (04/09/2026):
+
+- **Uma farmácia pode ser ou não ser um ponto de coleta.**
+- **Definição de ponto de coleta:**
+  1. recebe agendamento;
+  2. tem controle de horário de funcionamento (disponibilidade);
+  3. tem um técnico responsável pela abertura e fechamento;
+  4. tem controle de aberto/fechado controlado pelo técnico.
+
+Contexto atual (pré-implementação):
+
+- `Pharmacy` é a entidade "farmácia/ponto de coleta"; não há flag de ponto,
+  nem horário de funcionamento, nem vínculo com técnico, nem estado
+  aberto/fechado.
+- O "local de coleta mais próximo" (D-01) hoje considera qualquer farmácia
+  ativa georreferenciada; com a D-03 deve considerar **apenas pontos de
+  coleta** (e a definição do que é ponto).
+
+### Perguntas de domínio (respondidas pelo usuário)
+
+- (preencher: laboratório também usa o mesmo flag? vínculo de técnicos por
+  ponto/escala; aplicação da disponibilidade no agendamento; filtro de
+  aberto/fechado na resposta D-01; granularidade do horário de funcionamento)
