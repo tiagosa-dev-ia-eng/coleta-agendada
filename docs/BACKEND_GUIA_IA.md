@@ -175,7 +175,20 @@ cd backend && PYTHONPATH=.pylibs .pylibs/bin/ruff check apps config manage.py
 
 ---
 
-## 8. Variáveis de ambiente importantes
+## 8. Parâmetros de IA (B-07 — oficiais)
+
+| Variável | Default | Semântica |
+|---|---|---|
+| `DEEPSEEK_API_KEY` | vazio | Chave real; vazio = mock determinístico |
+| `DEEPSEEK_MODEL` | deepseek-chat | Modelo da API |
+| `DEEPSEEK_BASE_URL` | https://api.deepseek.com | Base da API |
+| `DEEPSEEK_TEMPERATURE` | 0.2 | Temperatura da chamada |
+| `AI_MIN_CONFIDENCE` | 0.7 | Abaixo → encaminha a humano |
+| `DEEPSEEK_MOCK` | 0 | 1 = força mock mesmo com chave (sem tokens) |
+
+Valores oficiais decididos (04/09/2026); ajustes exigem nova decisão (G-10).
+
+## 8.1 Variáveis de ambiente importantes
 
 `backend/.env` (gitignored; exemplo em `.env.example`): `DEEPSEEK_API_KEY`,
 `DEEPSEEK_MODEL`, `DEEPSEEK_TEMPERATURE`, `AI_MIN_CONFIDENCE`, `WHATSAPP_PROVIDER`,
@@ -228,6 +241,11 @@ backend/
 | 1.1.9 | 04/09/2026 | Auditoria por laboratório: AuditLog.laboratory + record() com derivação automática; GET /audit escopado (audit.view). | §6 |
 | 1.1.10 | 04/09/2026 | Agendamento sem conflito: janela de coleta (APPOINTMENT_SLOT_MINUTES, default 30 min) impede sobreposição no mesmo ponto/técnico. | §4/§6 |
 | 1.1.12 | 04/09/2026 | Orçamentos RN-ORC-004/005: revisão pós-validação/envio cria nova versão (volta a QUOTE_DRAFT); versão aprovada é imutável (409). | §3 |
+| 1.1.13 | 04/09/2026 | Gateway Pagar.me (B-01): PagarMeGateway Core v5 via env (PAYMENT_GATEWAY=pagarme; HTTP Basic secret). | §6 |
+| 1.1.14 | 04/09/2026 | Provedor WhatsApp Z-PRO (B-03): gateway outbound (env ZPRO_*) com hook pós-resposta. | §5 |
+| 1.1.15 | 04/09/2026 | LGPD MVP (B-04): consentimento/exportação/anonimização do paciente. | §6 |
+| 1.1.22 | 04/09/2026 | Validade do orçamento (B-05): QUOTATION_VALIDITY_DAYS (15); aprovação bloqueada pós-expiração (quote_expired); is_expired no serializer. | §3 |
+| 1.1.23 | 04/09/2026 | Parâmetros de IA oficiais (B-07): documentados (tabela §8) + .env.example. | §8 |
 
 ---
 

@@ -41,13 +41,13 @@ Validações de regra de negócio: **sempre no backend** (AGENTS.md §8).
 
 | # | Pendência | Decisão necessária | Gate |
 |---|---|---|---|
-| B-01 | Gateway de pagamento real (link/sandbox/webhook) | Provedor e fluxo | G-02 |
+| B-01 | Gateway de pagamento real — **Pagar.me (decisão 04/09)**: adapter implementado (v1.1.13); validar link/checkout e webhook em sandbox (chaves pendentes) | — | G-02 |
 | B-02 | Infra cloud/deploy (provedor, domínio, storage, worker) | Escolhas de infra | G-04 |
-| B-03 | Provedor WhatsApp real (payload/templates/mídias; contatos D-04 prontos) | Provedor | G-05 |
-| B-04 | LGPD: consentimento, retenção, exclusão/correção | Política | G-06 |
-| B-05 | Validade/invalidação do orçamento pós-edição; versão aprovada | RN-ORC-004/005 implementados (v1.1.12); prazo de validade do orçamento ainda exige decisão | G-08 |
+| B-03 | Provedor WhatsApp **Z-PRO/Dorislabs (decisão 04/09)**: gateway outbound + hook (v1.1.14); validar endpoints/payload com a coleção Z-PRO e credenciais | — | G-05 |
+| B-04 | LGPD MVP (v1.1.15): consentimento + exportar + anonimização; FALTA decisão de retenção/política de guarda e purga | — | G-06 |
+| B-05 | Validade/invalidação do orçamento pós-edição; versão aprovada | **RESOLVIDA** — RN-ORC-004/005 (v1.1.12) + validade de 15 dias (v1.1.22, decisão usuário) | G-08 |
 | B-06 | Reagendamento/cancelamento de agendamento | Política | G-09 |
-| B-07 | Parâmetros de IA (modelo/prompt/temperatura/confiança/fallback) | Config | G-10 |
+| B-07 | Parâmetros de IA — **RESOLVIDA (v1.1.23): env oficiais documentados** (DEEPSEEK_MODEL/BASE_URL/TEMPERATURE, AI_MIN_CONFIDENCE, DEEPSEEK_MOCK) | — | G-10 |
 | B-08 | Origem oficial de preços; preço por região/parceiro | Origem/regra | G-01 evolução |
 
 ## 4. Frontend — documento dedicado

@@ -217,11 +217,12 @@ class WhatsAppService:
             update_fields=["ai_interpretation", "ai_model", "ai_used_mock", "ai_error"]
         )
         reply = WhatsAppService._act(extraction, conv)
-        WhatsAppMessage.objects.create(
+        outbound = WhatsAppMessage.objects.create(
             conversation=conv,
             direction=Direction.OUTBOUND,
             content=reply,
         )
+        WhatsAppService._deliver_outbound(outbound)
         audit_record(
             action="whatsapp.message_processed",
             entity_type="whatsapp.Conversation",
@@ -416,3 +417,13 @@ class WhatsAppService:
             "nesse ponto para você? É só me dizer qual exame e em qual período "
             "prefere."
         )
+
+    @staticmethod
+    def _deliver_outbound(outbound):
+        """Entrega a resposta no provedor configurado (simulador = só banco)."""
+        from apps.whatsapp.gateway import ProviderError, get_provider
+
+        try:
+            get_provider().deliver_outbound(outbound)
+        except ProviderError as exc:
+            logger.warning("Mensagem outbound não entregue no provedor: %s", exc)

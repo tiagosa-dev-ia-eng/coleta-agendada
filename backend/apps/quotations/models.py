@@ -110,6 +110,19 @@ class Quotation(models.Model):
         return self.approved_at is not None
 
     @property
+    def is_expired(self) -> bool:
+        """Orçamento final expira após QUOTATION_VALIDITY_DAYS (B-05: 15 dias)."""
+        from datetime import timedelta
+
+        from django.conf import settings
+        from django.utils import timezone
+
+        if not self.is_final or self.validated_at is None:
+            return False
+        days = getattr(settings, "QUOTATION_VALIDITY_DAYS", 15)
+        return timezone.now() > self.validated_at + timedelta(days=days)
+
+    @property
     def missing_price_count(self) -> int:
         return self.items.filter(unit_price__isnull=True).count()
 

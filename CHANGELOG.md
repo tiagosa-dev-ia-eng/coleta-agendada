@@ -6,6 +6,10 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.24 | 04/09/2026 | feat(preview-contacts-gps): preview interativo multi-perfil, canais oficiais WhatsApp (F-07) em Laboratório e Farmácia, busca por GPS no simulador (F-09) e sincronização geral. |
+| 1.1.23 | 04/09/2026 | docs: parâmetros de IA oficiais (B-07) + .env.example. |
+| 1.1.22 | 04/09/2026 | feat(quotations): validade do orçamento de 15 dias (expiração automática após 15 dias). |
+| 1.1.21 | 04/09/2026 | chore(lint): ajustes de estilo pós-merge. |
 | 1.1.20 | 04/09/2026 | feat(preview-contacts-gps): preview interativo multi-perfil, canais oficiais WhatsApp (F-07) em Laboratório e Farmácia, e busca por GPS no simulador (F-09). |
 | 1.1.19 | 04/09/2026 | feat(resellers-audit): gestão completa de revendedores (F-05) e trilha de auditoria e conformidade (F-06). |
 | 1.1.18 | 04/09/2026 | feat(calendar-f04): calendário interativo multi-formato (semana/dia/WhatsApp) e CRUD completo de exames no laboratório (F-04). |
@@ -28,3 +32,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.10 | 04/09/2026 | Agenda sem conflito: coleta ocupa janela padrão (APPOINTMENT_SLOT_MINUTES, default 30 min, configurável); agendamento rejeita sobreposição no mesmo ponto (farmácia/laboratório) ou com o mesmo técnico (domiciliar) + testes (2). |
 | 1.1.11 | 04/09/2026 | docs: demandas reorganizadas por área — BACKEND (finaliza o agente atual) × FRONTEND (outro programador; novo docs/demandas-frontend.md com tarefas F-01…F-09 e endpoints prontos). AGENTS.md/README atualizados. |
 | 1.1.12 | 04/09/2026 | Orçamentos (B-05/G-08): RN-ORC-004/005 — revisão após validação/envio cria NOVA versão (rascunho; retorna a QUOTE_DRAFT via transições novas); versão APROVADA é imutável (409). Testes +3. |
+| 1.1.13 | 04/09/2026 | Gateway Pagar.me (B-01): adapter PagarMeGateway (Core v5, HTTP Basic com PAGARME_SECRET_KEY, POST {base}/orders, valores em centavos; endpoints via env) + seleção por PAYMENT_GATEWAY=pagarme + testes (3). Link/checkout e mapeamento de webhook a validar em sandbox. |
