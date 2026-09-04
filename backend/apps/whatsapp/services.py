@@ -226,6 +226,7 @@ class WhatsAppService:
             action="whatsapp.message_processed",
             entity_type="whatsapp.Conversation",
             entity_id=conv.pk,
+            laboratory=conv.laboratory,
             metadata={"intent": extraction.get("intent"), "mock": used_mock},
         )
         return conv
@@ -243,6 +244,7 @@ class WhatsAppService:
             action="whatsapp.memory_cleared",
             entity_type="whatsapp.Conversation",
             entity_id=conv.pk,
+            laboratory=conv.laboratory,
             user=by_user if (by_user and by_user.is_authenticated) else None,
             metadata={"cleared": cleared},
         )

@@ -9,6 +9,15 @@ from django.db import models
 
 
 class AuditLog(models.Model):
+    laboratory = models.ForeignKey(
+        "organizations.Laboratory",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="audit_logs",
+        verbose_name="laboratório",
+        help_text="Escopo do evento (v1.1.9): permite auditoria por laboratório.",
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -46,8 +55,20 @@ def record(
     ip=None,
     user_agent="",
     metadata=None,
+    laboratory=None,
 ) -> AuditLog:
-    """Cria um registro de auditoria de forma explícita (serviço mínimo do app audit)."""
+    """Cria um registro de auditoria (serviço mínimo do app audit).
+
+    Quando laboratory não é informado, deriva do usuário (escopo do
+    laboratório) quando ele pertence a um — centraliza a atribuição de escopo.
+    """
+    if laboratory is None and user is not None:
+        try:
+            from apps.organizations import scope
+
+            laboratory = scope.laboratory_of(user)
+        except Exception:  # noqa: BLE001 — atribuição não pode derrubar a auditoria
+            laboratory = None
     return AuditLog.objects.create(
         action=action,
         entity_type=entity_type,
@@ -56,4 +77,5 @@ def record(
         ip=ip,
         user_agent=user_agent,
         metadata=metadata or {},
+        laboratory=laboratory,
     )

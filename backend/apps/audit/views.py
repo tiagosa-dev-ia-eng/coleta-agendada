@@ -1,8 +1,8 @@
-"""Consulta da trilha de auditoria (doc 11 §5).
+"""Consulta da trilha de auditoria (doc 11 §5), escopada por laboratório.
 
-Segurança (menor privilégio): endpoint restrito a SUPERUSUÁRIO nesta versão.
-A permissão 'audit.view' existe no catálogo para laboratório; escopo por
-laboratório exige atribuir o laboratório no AuditLog — evolução registrada.
+Superusuário vê tudo; usuários com permissão audit.view (laboratório) veem
+apenas os eventos do próprio laboratório (atribuição em AuditLog.laboratory,
+v1.1.9).
 """
 from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import PermissionDenied
@@ -18,6 +18,11 @@ def _serialize(row):
         "action": row.action,
         "entity_type": row.entity_type,
         "entity_id": row.entity_id,
+        "laboratory": (
+            {"id": row.laboratory.pk, "name": row.laboratory.name}
+            if row.laboratory_id
+            else None
+        ),
         "user": (
             {"id": row.user.pk, "email": row.user.email}
             if row.user_id
@@ -33,9 +38,23 @@ class AuditLogListView(APIView):
     """GET /audit — lista a trilha com filtros (somente superusuário)."""
 
     def get(self, request):
-        if not request.user.is_superuser:
-            raise PermissionDenied("Somente superusuário consulta auditoria.")
-        qs = AuditLog.objects.select_related("user").all()
+        from apps.accounts import rbac
+        from apps.organizations import scope
+
+        is_super = request.user.is_superuser
+        if not is_super and not rbac.has_permission(request.user, "audit.view"):
+            raise PermissionDenied("Sem permissão para consultar auditoria.")
+        lab = None
+        if not is_super:
+            lab = scope.laboratory_of(request.user)
+            if lab is None:
+                raise PermissionDenied(
+                    "Laboratório sem escopo: auditoria disponível para superusuário "
+                    "ou laboratório com organização vinculada."
+                )
+        qs = AuditLog.objects.select_related("user", "laboratory").all()
+        if lab is not None:
+            qs = qs.filter(laboratory=lab)
         params = request.query_params
         if params.get("action"):
             qs = qs.filter(action__iexact=params["action"])

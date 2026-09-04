@@ -92,6 +92,7 @@ def _audit(action, point, *, user=None, metadata=None):
         action=action,
         entity_type="collection_points.CollectionPoint",
         entity_id=point.pk,
+        laboratory=point.laboratory,
         user=user,
         metadata=metadata or {},
     )
