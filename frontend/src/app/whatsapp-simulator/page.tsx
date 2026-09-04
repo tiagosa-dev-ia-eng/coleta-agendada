@@ -17,6 +17,7 @@ const SUGGESTIONS = [
   "Quero agendar coleta de hemograma amanhã de manhã",
   "Quero coleta de glicemia e TSH em casa hoje à tarde",
   "Qual o status da minha solicitação?",
+  "Qual a farmácia mais próxima da minha localização?",
   "Oi, tudo bem?",
 ];
 
@@ -29,6 +30,8 @@ export default function WhatsappSimulator() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [notice, setNotice] = useState("");
+  const [lat, setLat] = useState("-23.5505"); // demo: centro de São Paulo
+  const [lon, setLon] = useState("-46.6333");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const loadMessages = useCallback(
@@ -99,6 +102,43 @@ export default function WhatsappSimulator() {
       await loadMessages(token, phone);
     } catch {
       setNotice("Falha de rede ao enviar a mensagem.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+
+  async function sendLocation() {
+    if (!token) return;
+    const latitude = Number(lat.replace(",", "."));
+    const longitude = Number(lon.replace(",", "."));
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      setNotice("Localização inválida — use latitude e longitude numéricas.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/webhooks/whatsapp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          from: phone,
+          location: { latitude, longitude },
+          provider: "simulator",
+        }),
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+        setNotice("Erro no envio da localização: " + (err?.error?.message ?? res.statusText));
+        return;
+      }
+      setNotice("");
+      await loadMessages(token, phone);
+    } catch {
+      setNotice("Falha de rede ao enviar a localização.");
     } finally {
       setBusy(false);
     }
@@ -212,6 +252,34 @@ export default function WhatsappSimulator() {
             {s}
           </button>
         ))}
+      </div>
+      <div className="border-t border-zinc-800 px-4 py-2">
+        <p className="text-[11px] uppercase tracking-wide text-zinc-500">
+          📍 Localização (D-01 — farmácia mais próxima)
+        </p>
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            className="w-28 rounded bg-zinc-800 px-2 py-1 text-xs text-white outline-none ring-1 ring-zinc-600 focus:ring-emerald-500"
+            value={lat}
+            onChange={(e) => setLat(e.target.value)}
+            placeholder="latitude"
+            title="Latitude (ex.: -23.5505)"
+          />
+          <input
+            className="w-28 rounded bg-zinc-800 px-2 py-1 text-xs text-white outline-none ring-1 ring-zinc-600 focus:ring-emerald-500"
+            value={lon}
+            onChange={(e) => setLon(e.target.value)}
+            placeholder="longitude"
+            title="Longitude (ex.: -46.6333)"
+          />
+          <button
+            onClick={sendLocation}
+            disabled={busy}
+            className="rounded bg-emerald-700 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-600 disabled:opacity-40"
+          >
+            Enviar localização
+          </button>
+        </div>
       </div>
       <div className="border-t border-zinc-700 p-3">
         {notice && <p className="mb-2 text-xs text-amber-300">{notice}</p>}

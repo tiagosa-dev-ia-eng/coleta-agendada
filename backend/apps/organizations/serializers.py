@@ -76,6 +76,8 @@ class PharmacyCreateSerializer(_EntityBaseSerializer):
             "city",
             "state",
             "zip_code",
+            "latitude",
+            "longitude",
             "status",
             "email",
             "password",

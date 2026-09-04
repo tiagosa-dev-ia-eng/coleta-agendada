@@ -15,9 +15,29 @@ from apps.ai.client import AICallError, call_deepseek
 from apps.ai.mock import catalog_hint, mock_analyze
 from apps.ai.schema import ExtractionError, normalize_extraction
 from apps.audit.models import record as audit_record
+from apps.organizations.geolocation import (
+    nearest_pharmacies,
+    parse_coordinates,
+    valid_coordinates,
+)
 from apps.whatsapp.models import Direction, WhatsAppConversation, WhatsAppMessage
 
 logger = logging.getLogger(__name__)
+
+# Demanda D-01: texto do paciente pedindo a farmácia mais próxima SEM
+# localização ainda — o chatbot deve pedir para compartilhar a localização.
+NEAREST_PHARMACY_MARKERS = (
+    "próxim",
+    "proxim",
+    "mais próxima",
+    "mais proxima",
+    "mais perto",
+    "perto",
+    "localiza",
+    "onde fica",
+    "onde e",
+    "qual farm",
+)
 
 PROTOCOL_RE = re.compile(r"CA-\d{8}-[A-F0-9]{6}", re.IGNORECASE)
 
@@ -73,12 +93,38 @@ class WhatsAppService:
         )
 
     @staticmethod
+    def _extract_coordinates(payload):
+        """Localização estruturada (location) ou par \"lat, lon\" no texto."""
+        loc = payload.get("location") or {}
+        if isinstance(loc, dict):
+            lat = loc.get("latitude", loc.get("lat"))
+            lon = loc.get("longitude", loc.get("lon"))
+            if lat is not None and lon is not None and valid_coordinates(lat, lon):
+                return (float(lat), float(lon))
+        return parse_coordinates(payload.get("body"))
+
+    @staticmethod
+    def _looks_like_nearest_pharmacy_ask(text):
+        """Paciente pergunta pela farmácia mais próxima sem enviar localização."""
+        lowered = (text or "").lower()
+        if "farm" not in lowered:
+            return False
+        return any(marker in lowered for marker in NEAREST_PHARMACY_MARKERS)
+
+    @staticmethod
+    def _fmt_km(distance_km):
+        if distance_km < 10:
+            return f"{distance_km:.1f}".rstrip("0").rstrip(".")
+        return f"{distance_km:.0f}"
+
+    @staticmethod
     def handle_inbound(payload, *, request=None):
         phone = normalize_phone(payload.get("from"))
         text = str(payload.get("body") or "").strip()
         message_id = str(payload.get("message_id") or uuid.uuid4().hex)
-        if not phone or not text:
-            raise ValueError("from e body são obrigatórios.")
+        coords = WhatsAppService._extract_coordinates(payload)
+        if not phone or (not text and coords is None):
+            raise ValueError("from e body (ou location) são obrigatórios.")
         request_user = getattr(request, "user", None) if request else None
         provider = payload.get("provider") or settings.WHATSAPP_PROVIDER
 
@@ -101,16 +147,38 @@ class WhatsAppService:
             conversation=conv,
             provider_message_id=message_id,
             direction=Direction.INBOUND,
-            content=text,
+            content=text
+            or (
+                f"📍 Localização compartilhada: {coords[0]}, {coords[1]}"
+                if coords is not None
+                else ""
+            ),
         )
-        try:
-            extraction, model, used_mock, ai_error = WhatsAppService.analyze(text)
-        except ExtractionError as exc:
-            extraction = {"intent": "help", "confidence": 0.0}
+        if coords is not None:
+            # D-01: localização recebida -> resolve a farmácia mais próxima de
+            # forma determinística (sem custo/atraso de LLM).
+            extraction = {
+                "intent": "nearest_pharmacy",
+                "confidence": 1.0,
+                "location": {"latitude": coords[0], "longitude": coords[1]},
+            }
             model = ""
-            used_mock = True
-            ai_error = True
-            logger.warning("Extração inválida da IA: %s", exc)
+            used_mock = False
+            ai_error = False
+        elif WhatsAppService._looks_like_nearest_pharmacy_ask(text):
+            extraction = {"intent": "nearest_pharmacy", "confidence": 1.0, "location": None}
+            model = ""
+            used_mock = False
+            ai_error = False
+        else:
+            try:
+                extraction, model, used_mock, ai_error = WhatsAppService.analyze(text)
+            except ExtractionError as exc:
+                extraction = {"intent": "help", "confidence": 0.0}
+                model = ""
+                used_mock = True
+                ai_error = True
+                logger.warning("Extração inválida da IA: %s", exc)
         # reforço: se a intenção for check_status, garante o protocolo na extração
         if extraction.get("intent") == "check_status" and not extraction.get("protocol"):
             m = PROTOCOL_RE.search(text)
@@ -171,6 +239,8 @@ class WhatsAppService:
             return WhatsAppService._create_request(extraction, conv)
         if intent == "check_status":
             return WhatsAppService._check_status(extraction, conv)
+        if intent == "nearest_pharmacy":
+            return WhatsAppService._nearest_pharmacy(extraction, conv)
         return (
             "Olá! Eu sou o assistente do Coleta Agendada. Posso ajudar você a "
             'solicitar uma coleta de exames (ex.: "quero agendar hemograma '
@@ -266,4 +336,47 @@ class WhatsAppService:
         return (
             f"Solicitação {req.protocol}: {req.get_status_display()}. "
             "Posso ajudar com mais alguma coisa?"
+        )
+    @staticmethod
+    def _nearest_pharmacy(extraction, conv):
+        """D-01: devolve a farmácia mais próxima da localização do paciente.
+
+        Busca na rede do laboratório do canal (conv.laboratory) apenas
+        farmácias ativas com coordenadas cadastradas. Sem localização válida,
+        pede o compartilhamento; sem farmácia georreferenciada, encaminha a
+        humano (não inventa ponto de coleta — regras 1/10 do AGENTS.md).
+        """
+        location = extraction.get("location") or {}
+        lat, lon = location.get("latitude"), location.get("longitude")
+        if lat is None or lon is None or not valid_coordinates(lat, lon):
+            return (
+                "Claro! Para te dizer a farmácia mais próxima da rede, "
+                "compartilhe sua localização atual pelo chat "
+                "(ícone 📎 → Localização)."
+            )
+        lab = conv.laboratory
+        if lab is None:
+            conv.status = "human"
+            conv.save(update_fields=["status"])
+            return (
+                "Ainda não identifiquei o laboratório deste canal. "
+                "Um atendente humano vai te ajudar a escolher o ponto de coleta."
+            )
+        ranked = nearest_pharmacies(lab.pk, float(lat), float(lon), limit=1)
+        if not ranked:
+            conv.status = "human"
+            conv.save(update_fields=["status"])
+            return (
+                f"Ainda não há farmácias da rede {lab.name} com localização "
+                "cadastrada neste momento. Um atendente humano vai te indicar "
+                "o ponto de coleta mais próximo em instantes."
+            )
+        distance_km, pharmacy = ranked[0]
+        parts = [part for part in (pharmacy.address, pharmacy.city, pharmacy.state) if part]
+        where = (" — " + ", ".join(parts)) if parts else ""
+        return (
+            f"A farmácia mais próxima da sua localização é a {pharmacy.name}"
+            f"{where} (a cerca de {WhatsAppService._fmt_km(distance_km)} km). "
+            "Posso agendar a coleta nesse ponto para você? É só me dizer qual "
+            "exame e em qual período prefere."
         )

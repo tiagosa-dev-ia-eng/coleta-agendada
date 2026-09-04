@@ -17,6 +17,6 @@ class ResellerAdmin(admin.ModelAdmin):
 
 @admin.register(Pharmacy)
 class PharmacyAdmin(admin.ModelAdmin):
-    list_display = ("name", "laboratory", "reseller", "city", "status")
+    list_display = ("name", "laboratory", "reseller", "city", "status", "latitude", "longitude")
     list_filter = ("laboratory", "status")
     search_fields = ("name", "document")

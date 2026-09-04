@@ -100,6 +100,22 @@ class Pharmacy(models.Model):
     city = models.CharField(max_length=80, blank=True, verbose_name="cidade")
     state = models.CharField(max_length=2, blank=True, verbose_name="UF")
     zip_code = models.CharField(max_length=10, blank=True, verbose_name="CEP")
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        verbose_name="latitude",
+        help_text="Coordenada para cálculo de proximidade (D-01).",
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        verbose_name="longitude",
+        help_text="Coordenada para cálculo de proximidade (D-01).",
+    )
     status = models.CharField(
         max_length=16, choices=STATUS_CHOICES, default=STATUS_ACTIVE, verbose_name="status"
     )

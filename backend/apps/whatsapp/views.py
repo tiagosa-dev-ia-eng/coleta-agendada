@@ -34,12 +34,13 @@ class InboundWhatsAppView(APIView):
             raise PermissionDenied("Webhook não autorizado.")
         from_field = request.data.get("from")
         body = request.data.get("body")
-        if not from_field or not body:
+        location = request.data.get("location")
+        if not from_field or (not body and not location):
             return Response(
                 {
                     "error": {
                         "code": "invalid",
-                        "message": "Campos 'from' e 'body' são obrigatórios.",
+                        "message": "Campos 'from' e 'body' (ou 'location') são obrigatórios.",
                         "details": {},
                     }
                 },
@@ -50,6 +51,7 @@ class InboundWhatsAppView(APIView):
                 {
                     "from": from_field,
                     "body": body,
+                    "location": location,
                     "message_id": request.data.get("message_id"),
                     "provider": request.data.get("provider") or settings.WHATSAPP_PROVIDER,
                 },
