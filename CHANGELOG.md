@@ -17,3 +17,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.7 | 04/09/2026 | Chatbot: economia de tokens — DEEPSEEK_MOCK=1 força mock mesmo com chave (validar respostas sem custo); consulta com protocolo CA- resolvida sem IA (determinística); testes (2). |
 | 1.1.8 | 04/09/2026 | docs: README com referência à versão interna (VERSION/CHANGELOG/GET /api/v1/version). |
 | 1.1.9 | 04/09/2026 | Auditoria escopada por laboratório: AuditLog.laboratory (migração 0002, derivação automática do usuário; explícito no WhatsApp/CollectionPoints); GET /audit — superusuário tudo, laboratório só o próprio (permissão audit.view) + testes (3). |
+| 1.1.10 | 04/09/2026 | Agenda sem conflito: coleta ocupa janela padrão (APPOINTMENT_SLOT_MINUTES, default 30 min, configurável); agendamento rejeita sobreposição no mesmo ponto (farmácia/laboratório) ou com o mesmo técnico (domiciliar) + testes (2). |

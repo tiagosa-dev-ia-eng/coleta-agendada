@@ -1,4 +1,5 @@
 """AppointmentService — agendamento e execução da coleta (docs 05/10, ADR-008)."""
+
 from django.utils import timezone
 from rest_framework.exceptions import APIException
 
@@ -56,6 +57,9 @@ class AppointmentService:
                 else "A unidade do laboratório"
             )
             raise SchedulingError(detail=f"{label} não é um ponto de coleta ativo.")
+        AppointmentService._ensure_free_slot(
+            request_obj, lab, mode, scheduled_at, pharmacy, technician
+        )
         appt = Appointment.objects.create(
             request=request_obj,
             mode=mode,
@@ -119,6 +123,36 @@ class AppointmentService:
         if last_error is not None:
             raise SchedulingError(detail=str(last_error))
         raise SchedulingError(detail="Sem disponibilidade no horário solicitado.")
+
+    @staticmethod
+    def _ensure_free_slot(request_obj, lab, mode, scheduled_at, pharmacy, technician):
+        """Conflito de agenda (janela de coleta por ponto ou técnico).
+
+        A coleta ocupa uma janela de APPOINTMENT_SLOT_MINUTES (default 30 min).
+        Rejeita novo agendamento quando a janela se sobrepõe a um existente no
+        MESMO ponto (farmácia/laboratório) ou com o MESMO técnico (domiciliar).
+        """
+        from datetime import timedelta as _td
+
+        from django.conf import settings as _settings
+
+        slot = _td(minutes=getattr(_settings, "APPOINTMENT_SLOT_MINUTES", 30))
+        start = scheduled_at
+        end = start + slot
+        qs = Appointment.objects.exclude(request=request_obj)
+        if mode == AppointmentMode.DOMICILIARY:
+            if technician is None:
+                return
+            qs = qs.filter(technician=technician)
+        elif mode == AppointmentMode.PHARMACY:
+            qs = qs.filter(pharmacy=pharmacy, laboratory=lab)
+        else:  # LABORATORY: unidade do laboratório
+            qs = qs.filter(mode=AppointmentMode.LABORATORY, laboratory=lab)
+        if qs.filter(scheduled_at__lt=end, scheduled_at__gt=start - slot).exists():
+            raise SchedulingError(
+                detail="Conflito de agenda: já existe coleta nesse horário "
+                "(ponto ou técnico ocupado)."
+            )
 
     @staticmethod
     def check_in(appt, *, performed_by, request=None):

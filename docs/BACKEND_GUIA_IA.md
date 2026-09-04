@@ -225,6 +225,8 @@ backend/
 | 1.1.0 | 04/09/2026 | Controle de versão interna (VERSION/bump/endpoint /version) + regra geral de validação no backend. | §10/§11 |
 | 1.1.1–1.1.5 | 04/09/2026 | Cobertura de endpoints: exames (CRUD), pagamentos (cancel/refund), auditoria (GET /audit, superusuário), contatos WhatsApp (PATCH) e revenda (GET/PATCH). | §6 |
 | 1.1.6 | 04/09/2026 | Documentação desta entrega (endpoints listados acima). | este arquivo |
+| 1.1.9 | 04/09/2026 | Auditoria por laboratório: AuditLog.laboratory + record() com derivação automática; GET /audit escopado (audit.view). | §6 |
+| 1.1.10 | 04/09/2026 | Agendamento sem conflito: janela de coleta (APPOINTMENT_SLOT_MINUTES, default 30 min) impede sobreposição no mesmo ponto/técnico. | §4/§6 |
 
 ---
 

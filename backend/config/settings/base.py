@@ -127,6 +127,9 @@ DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 DEEPSEEK_TEMPERATURE = float(os.getenv("DEEPSEEK_TEMPERATURE", "0.2"))
 AI_MIN_CONFIDENCE = float(os.getenv("AI_MIN_CONFIDENCE", "0.7"))
 
+# Agendamento: duração padrão de uma coleta p/ evitar conflito de agenda
+APPOINTMENT_SLOT_MINUTES = int(os.getenv("APPOINTMENT_SLOT_MINUTES", "30"))
+
 # WhatsApp (doc 08): provider "simulator" até o gate G-05 (payload real)
 WHATSAPP_PROVIDER = os.getenv("WHATSAPP_PROVIDER", "simulator")
 

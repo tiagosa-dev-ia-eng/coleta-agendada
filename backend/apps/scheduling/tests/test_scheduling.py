@@ -1,4 +1,5 @@
 """Testes M5 — agendamento e realização (CT-INT-003/004/005; doc 14 §2)."""
+import uuid
 from datetime import UTC, date, datetime, time, timedelta
 
 from django.core.management import call_command
@@ -28,7 +29,9 @@ def _pharmacy(make_user, lab):
 
 
 def _technician(make_user, lab):
-    u = make_user(role_code="technician", email="tec-agen@exemplo.com")
+    u = make_user(
+        role_code="technician", email=f"tec-agen-{uuid.uuid4().hex[:6]}@exemplo.com"
+    )
     return Technician.objects.create(user=u, laboratory=lab, status="active"), u
 
 
@@ -279,3 +282,59 @@ def test_schedule_closed_today_rejected(make_user, auth_client):
     )
     assert resp.status_code == 409
     assert "fechado hoje" in resp.json()["error"]["message"]
+
+
+# ---------- v1.1.10: agenda sem conflito (janela de coleta) ----------
+
+def test_pharmacy_slot_conflict_rejected(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    pharmacy, _ = _pharmacy(make_user, lab)
+    when = _next_at_10am(3)
+    _, _, req1, lc = _approved_request(make_user, auth_client, lab_user, email="pac-c1@exemplo.com")
+    _, _, req2, lc2 = _approved_request(
+        make_user, auth_client, lab_user, email="pac-c2@exemplo.com"
+    )
+    payload = {"mode": "pharmacy", "scheduled_at": when.isoformat(), "pharmacy_id": pharmacy.pk}
+    first = lc.post(f"/api/v1/requests/{req1}/appointment", payload, format="json")
+    assert first.status_code == 201, first.content
+    # mesma farmácia, 10 minutos depois (dentro da janela de 30 min) -> conflito
+    second = lc.post(f"/api/v1/requests/{req2}/appointment", payload, format="json")
+    assert second.status_code == 409
+    assert "Conflito de agenda" in second.json()["error"]["message"]
+    # horário seguinte fora da janela (10:30) é aceito
+    later = _next_at_10am(3).replace(hour=10, minute=30)
+    ok = lc.post(
+        f"/api/v1/requests/{req2}/appointment",
+        {"mode": "pharmacy", "scheduled_at": later.isoformat(), "pharmacy_id": pharmacy.pk},
+        format="json",
+    )
+    assert ok.status_code == 201, ok.content
+
+
+def test_technician_slot_conflict_domiciliary(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    tech, _ = _technician(make_user, lab)
+    when = _next_at_10am(3)
+    _, _, req1, lc = _approved_request(make_user, auth_client, lab_user, email="pac-d1@exemplo.com")
+    _, _, req2, lc2 = _approved_request(
+        make_user, auth_client, lab_user, email="pac-d2@exemplo.com"
+    )
+    payload = {"mode": "domiciliary", "scheduled_at": when.isoformat(), "technician_id": tech.pk}
+    created = lc.post(
+        f"/api/v1/requests/{req1}/appointment", payload, format="json"
+    )
+    assert created.status_code == 201
+    conflict = lc.post(f"/api/v1/requests/{req2}/appointment", payload, format="json")
+    assert conflict.status_code == 409
+    # outro técnico no mesmo horário é aceito
+    other_tech, _ = _technician(make_user, lab)
+    free = lc.post(
+        f"/api/v1/requests/{req2}/appointment",
+        {
+            "mode": "domiciliary",
+            "scheduled_at": when.isoformat(),
+            "technician_id": other_tech.pk,
+        },
+        format="json",
+    )
+    assert free.status_code == 201
