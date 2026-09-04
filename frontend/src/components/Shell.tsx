@@ -22,6 +22,9 @@ export default function Shell({ children, title }: { children: ReactNode; title?
   const [version, setVersion] = useState<string>("1.1.12");
 
   useEffect(() => {
+    const handleLogoutEvent = () => setMe(null);
+    window.addEventListener("ca:logout", handleLogoutEvent);
+
     authedFetch<Me>("/api/v1/auth/me")
       .then(setMe)
       .catch((err: unknown) => {
@@ -41,6 +44,10 @@ export default function Shell({ children, title }: { children: ReactNode; title?
         if (data?.version) setVersion(data.version);
       })
       .catch(() => {});
+
+    return () => {
+      window.removeEventListener("ca:logout", handleLogoutEvent);
+    };
   }, []);
 
   if (error) {
@@ -65,10 +72,26 @@ export default function Shell({ children, title }: { children: ReactNode; title?
                 {me.name || me.email} · <b className="text-zinc-900">{ROLE_LABEL[me.role?.code ?? ""] ?? me.role?.name}</b>
               </span>
               <button
+                type="button"
                 onClick={clearToken}
-                className="rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100 active:bg-zinc-200"
+                aria-label="Sair da conta e voltar ao login"
+                title="Sair da conta e voltar ao login"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/80 px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 active:scale-[0.98] cursor-pointer shadow-2xs"
               >
-                Sair
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span>Sair</span>
               </button>
             </div>
           )}

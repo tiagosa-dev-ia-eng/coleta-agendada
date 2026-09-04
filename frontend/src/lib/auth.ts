@@ -9,23 +9,34 @@ export const DEMO_ROLE_KEY = "ca_demo_role";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
+  if (window.localStorage.getItem("ca_logged_out") === "true") {
+    return null;
+  }
   const stored = window.localStorage.getItem(TOKEN_KEY);
   if (stored) return stored;
-  // No modo preview do AI Studio, inicializa com token de demonstração para exibição imediata
+  // No modo preview do AI Studio, se não houve logout explícito, inicializa com token de demonstração
   const defaultToken = "demo_preview_token_laboratory";
   window.localStorage.setItem(TOKEN_KEY, defaultToken);
   return defaultToken;
 }
 
 export function setToken(token: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem("ca_logged_out");
   window.localStorage.setItem(TOKEN_KEY, token);
+  window.dispatchEvent(new CustomEvent("ca:login", { detail: { token } }));
 }
 
 export function clearToken() {
+  if (typeof window === "undefined") return;
   window.localStorage.removeItem(TOKEN_KEY);
-  if (typeof window !== "undefined") {
-    // Altera o hash para login sem recarregar a janela inteira
+  window.localStorage.removeItem(DEMO_ROLE_KEY);
+  window.localStorage.setItem("ca_logged_out", "true");
+  window.dispatchEvent(new CustomEvent("ca:logout"));
+  if (window.location.hash !== undefined && (window.location.pathname === "/" || window.location.pathname === "")) {
     window.location.hash = "login";
+  } else {
+    window.location.assign("/login");
   }
 }
 
