@@ -6,6 +6,7 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.14 | 04/09/2026 | feat(version): endpoint GET /api/v1/version e indicador dinâmico de versão no rodapé global (F-08). |
 | 1.1.13 | 04/09/2026 | docs(ux-pwa): relatório de análise técnica de UX, ergonomia para técnicos de campo e diretrizes PWA (docs/RELATORIO_ANALISE_TECNICA_UX_PWA.md). |
 | 1.1.0 | 04/09/2026 | Controle de versão interna (VERSION, scripts/bump-version.sh, targets make version-*, endpoint GET /api/v1/version). REGRA GERAL registrada: toda mudança incrementa a versão; validações de regra de negócio sempre no backend. |
 | 1.0.0 | 04/09/2026 | Baseline: M0–M9, D-01 (local de coleta mais próximo), D-03 (entidade CollectionPoint: agendamento/disponibilidade/técnico/aberto-fechado), D-04 (contatos WhatsApp/BSUID) e documentação viva (até commit bdf0e94). |

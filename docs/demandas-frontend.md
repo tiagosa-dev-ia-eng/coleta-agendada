@@ -23,7 +23,7 @@ Fonte da verdade: `AGENTS.md`, `docs/demandas.md`, `docs/BACKEND_GUIA_IA.md` e o
 | F-05 | Edição de revendedor (status) | laboratorio | — | `GET/PATCH /api/v1/resellers/{id}` |
 | F-06 | Visualização da auditoria | superuser | — | `GET /api/v1/audit` (filtros) |
 | F-07 | Contatos WhatsApp por perfil (CRUD + edição) | laboratorio/farmacia/… | — | `/api/v1/whatsapp/contacts…` |
-| F-08 | Indicador de versão da aplicação | global | — | `GET /api/v1/version` |
+| F-08 | Indicador de versão da aplicação | global | — | `GET /api/v1/version` (✅ v1.1.14) |
 | F-09 | Botão de localização no simulador já existe; adequar copy do ponto mais próximo (horário/estado) | whatsapp-simulator | — | webhook |
 
 ## 3. Endpoints prontos (resumo para as telas)
