@@ -1,5 +1,6 @@
 | 1.1.13 | docs: relatório técnico de análise de UX, ergonomia e PWA para coleta domiciliar e pontos parceiros |
 | 1.1.14 | feat(version): indicador dinâmico de versão (F-08) no Shell e rota /api/v1/version |
+| 1.1.15 | feat(pwa-ui): manifesto PWA, viewport safe-area, alvos de toque 48px e modal de confirmação acessível |
 # Demandas do alinhamento — organizadas por área
 
 Registro vivo das demandas do cliente (origem: alinhamento; `docs/anotacao.txt` não é versionado).
