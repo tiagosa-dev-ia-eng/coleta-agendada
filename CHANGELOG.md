@@ -6,6 +6,7 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.17 | 04/09/2026 | feat(laboratorio): gestão de pontos de coleta (F-02/D-03: criação, janelas e técnicos) e pagamentos (F-03: cancel/refund). |
 | 1.1.16 | 04/09/2026 | feat(tecnico): gestão de pontos de coleta D-03 (abrir/fechar turno) e atalhos rápidos de campo (GPS/WhatsApp) no /tecnico (F-02). |
 | 1.1.15 | 04/09/2026 | feat(pwa-ui): base PWA (manifest.ts, viewport safe-area) e ergonomia de botões 48px + ConfirmModal. |
 | 1.1.14 | 04/09/2026 | feat(version): endpoint GET /api/v1/version e indicador dinâmico de versão no rodapé global (F-08). |

@@ -17,8 +17,8 @@ Fonte da verdade: `AGENTS.md`, `docs/demandas.md`, `docs/BACKEND_GUIA_IA.md` e o
 | ID | Tarefa | Área | Depende de | Endpoints prontos |
 |---|---|---|---|---|
 | F-01 | **D-02 — Publicidade/parceiros no perfil paciente** (cards) | paciente | Definição de conteúdo (fazer pergunta ao PO) | Endpoint de parceiros será criado no backend após definição |
-| F-02 | Gestão de **pontos de coleta** (abrir/fechar turno pelo técnico implementado; janelas/lab) | laboratorio/tecnico | — | `/api/v1/collection-points…` (técnico: ✅ v1.1.16) |
-| F-03 | Ações de pagamento (cancelar link, estornar confirmado) | laboratorio | — | `POST /payments/{id}/cancel`, `POST /payments/{id}/refund` |
+| F-02 | Gestão de **pontos de coleta** (criar/editar, janelas, designar técnicos, abrir/fechar) | laboratorio/tecnico | — | `/api/v1/collection-points…` (✅ v1.1.17) |
+| F-03 | Ações de pagamento (cancelar link, estornar confirmado) | laboratorio | — | `POST /payments/{id}/cancel`, `POST /payments/{id}/refund` (✅ v1.1.17) |
 | F-04 | CRUD de exames (criar/editar/desativar) | laboratorio (admin) | — | `/api/v1/exams`, `/api/v1/exams/{id}` |
 | F-05 | Edição de revendedor (status) | laboratorio | — | `GET/PATCH /api/v1/resellers/{id}` |
 | F-06 | Visualização da auditoria | superuser | — | `GET /api/v1/audit` (filtros) |
