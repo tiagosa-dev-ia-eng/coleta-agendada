@@ -93,10 +93,13 @@ class PharmacyCreateSerializer(_EntityBaseSerializer):
 
 
 class ResellerCreateSerializer(_EntityBaseSerializer):
+    name = serializers.CharField(source="user.full_name", read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = Reseller
-        fields = ["id", "status", "email", "password", "first_name", "user_id", "email_read"]
-        read_only_fields = ["id", "user_id", "email_read"]
+        fields = ["id", "status", "email", "password", "first_name", "user_id", "email_read", "name", "created_at"]
+        read_only_fields = ["id", "user_id", "email_read", "name", "created_at"]
 
     def role_code(self):
         return rbac.RESELLER

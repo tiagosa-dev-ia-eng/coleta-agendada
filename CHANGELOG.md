@@ -6,6 +6,7 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.19 | 04/09/2026 | feat(resellers-audit): gestão completa de revendedores (F-05) e trilha de auditoria e conformidade (F-06). |
 | 1.1.18 | 04/09/2026 | feat(calendar-f04): calendário interativo multi-formato (semana/dia/WhatsApp) e CRUD completo de exames no laboratório (F-04). |
 | 1.1.17 | 04/09/2026 | feat(laboratorio): gestão de pontos de coleta (F-02/D-03: criação, janelas e técnicos) e pagamentos (F-03: cancel/refund). |
 | 1.1.16 | 04/09/2026 | feat(tecnico): gestão de pontos de coleta D-03 (abrir/fechar turno) e atalhos rápidos de campo (GPS/WhatsApp) no /tecnico (F-02). |

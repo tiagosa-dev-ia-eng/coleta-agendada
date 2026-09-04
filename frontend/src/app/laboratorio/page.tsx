@@ -68,6 +68,26 @@ type AssignedTechnician = {
   assigned_at: string;
 };
 
+type ResellerItem = {
+  id: number;
+  email_read?: string;
+  name?: string;
+  status: string;
+  created_at?: string;
+};
+
+type AuditLogItem = {
+  id: number;
+  action: string;
+  entity_type: string;
+  entity_id: string | number;
+  user?: { id: number; email: string } | null;
+  laboratory?: { id: number; name: string } | null;
+  ip?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_at: string;
+};
+
 type CollectionPoint = {
   id: number;
   kind: "pharmacy" | "laboratory";
@@ -140,6 +160,20 @@ export default function Laboratorio() {
   // New point form
   const [showNewPointModal, setShowNewPointModal] = useState(false);
 
+  // F-05: Gestão de Revendedores
+  const [resellers, setResellers] = useState<ResellerItem[]>([]);
+  const [showResellerModal, setShowResellerModal] = useState(false);
+  const [resellerEmail, setResellerEmail] = useState("");
+  const [resellerPassword, setResellerPassword] = useState("");
+  const [resellerFirstName, setResellerFirstName] = useState("");
+  const [confirmToggleReseller, setConfirmToggleReseller] = useState<ResellerItem | null>(null);
+
+  // F-06: Trilha de Auditoria e Eventos
+  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
+  const [auditFilterAction, setAuditFilterAction] = useState("");
+  const [auditFilterEntity, setAuditFilterEntity] = useState("");
+  const [auditLoading, setAuditLoading] = useState(false);
+
   // F-04: CRUD de Exames (Criar / Editar / Desativar)
   const [showExamModal, setShowExamModal] = useState(false);
   const [examModalMode, setExamModalMode] = useState<"create" | "edit">("create");
@@ -181,7 +215,7 @@ export default function Laboratorio() {
 
   const loadAll = useCallback(async () => {
     try {
-      const [r, e, a, c, pts, tchs, pharms] = await Promise.all([
+      const [r, e, a, c, pts, tchs, pharms, resList, auditResp] = await Promise.all([
         authedFetch<RequestRow[]>("/api/v1/requests"),
         authedFetch<Exam[]>("/api/v1/exams"),
         authedFetch<Appt[]>("/api/v1/appointments"),
@@ -189,6 +223,8 @@ export default function Laboratorio() {
         authedFetch<CollectionPoint[]>("/api/v1/collection-points").catch(() => []),
         authedFetch<TechnicianOption[]>("/api/v1/technicians").catch(() => []),
         authedFetch<PharmacyOption[]>("/api/v1/pharmacies").catch(() => []),
+        authedFetch<ResellerItem[]>("/api/v1/resellers").catch(() => []),
+        authedFetch<{ items: AuditLogItem[]; count: number }>("/api/v1/audit").catch(() => ({ items: [], count: 0 })),
       ]);
       setReqs(r);
       setExams(e);
@@ -197,6 +233,8 @@ export default function Laboratorio() {
       setPoints(pts);
       setTechList(tchs);
       setPharmacies(pharms);
+      setResellers(resList);
+      setAuditLogs(auditResp.items || []);
       setErr("");
     } catch (ex) {
       setErr(ex instanceof Error ? ex.message : "erro");
@@ -255,6 +293,77 @@ export default function Laboratorio() {
       setNotice("Erro: " + (ex instanceof Error ? ex.message : ""));
     } finally {
       setBusyId(null);
+    }
+  }
+
+  // F-05: Revendedores Handlers
+  async function handleCreateReseller() {
+    if (!resellerEmail.trim() || !resellerPassword.trim()) {
+      setNotice("E-mail e senha inicial são obrigatórios para cadastrar o revendedor.");
+      return;
+    }
+    if (resellerPassword.length < 8) {
+      setNotice("A senha inicial deve ter pelo menos 8 caracteres.");
+      return;
+    }
+
+    setBusyId(888888);
+    try {
+      await authedFetch("/api/v1/resellers", {
+        method: "POST",
+        body: JSON.stringify({
+          email: resellerEmail.trim().toLowerCase(),
+          password: resellerPassword,
+          first_name: resellerFirstName.trim(),
+        }),
+      });
+      setNotice(`Revendedor ${resellerEmail} cadastrado com sucesso!`);
+      setShowResellerModal(false);
+      setResellerEmail("");
+      setResellerPassword("");
+      setResellerFirstName("");
+      await loadAll();
+    } catch (err) {
+      setNotice("Erro ao cadastrar revendedor: " + (err instanceof Error ? err.message : ""));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleToggleResellerStatus() {
+    if (!confirmToggleReseller) return;
+    const nextStatus = confirmToggleReseller.status === "active" ? "inactive" : "active";
+    setBusyId(confirmToggleReseller.id);
+    try {
+      await authedFetch(`/api/v1/resellers/${confirmToggleReseller.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      setNotice(`Status do revendedor ${confirmToggleReseller.email_read} alterado para ${nextStatus === "active" ? "Ativo" : "Inativo"}.`);
+      setConfirmToggleReseller(null);
+      await loadAll();
+    } catch (err) {
+      setNotice("Erro ao alterar status do revendedor: " + (err instanceof Error ? err.message : ""));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  // F-06: Filtro e Atualização da Auditoria
+  async function reloadAuditLogs() {
+    setAuditLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (auditFilterAction.trim()) params.set("action", auditFilterAction.trim());
+      if (auditFilterEntity.trim()) params.set("entity_type", auditFilterEntity.trim());
+      params.set("limit", "150");
+      const url = `/api/v1/audit?${params.toString()}`;
+      const data = await authedFetch<{ items: AuditLogItem[]; count: number }>(url);
+      setAuditLogs(data.items || []);
+    } catch (err) {
+      setNotice("Erro ao carregar logs de auditoria: " + (err instanceof Error ? err.message : ""));
+    } finally {
+      setAuditLoading(false);
     }
   }
 
@@ -1019,6 +1128,146 @@ export default function Laboratorio() {
         )}
       </Card>
 
+      {/* F-05: Gestão de Revendedores Parceiros */}
+      <Card
+        title="Gestão de Revendedores Parceiros (F-05)"
+        actions={
+          <div className="flex gap-2">
+            <Button kind="ghost" onClick={() => void loadAll()}>Atualizar</Button>
+            <Button kind="primary" onClick={() => setShowResellerModal(true)}>+ Novo Revendedor</Button>
+          </div>
+        }
+      >
+        <p className="text-xs text-zinc-500 mb-3">
+          Revendedores expandem a rede do laboratório, cadastrando farmácias e técnicos parceiros para coleta externa.
+        </p>
+
+        {resellers.length === 0 ? (
+          <Empty text="Nenhum revendedor cadastrado neste laboratório." />
+        ) : (
+          <div className="space-y-2">
+            {resellers.map((res) => (
+              <div
+                key={res.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-2xs hover:border-zinc-300 transition-all text-sm"
+              >
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-zinc-900">{res.name || res.email_read}</span>
+                    <StatusBadge status={res.status === "active" ? "ACTIVE" : "INACTIVE"} />
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    📧 {res.email_read} {res.created_at ? `· Cadastrado em: ${fmtDate(res.created_at)}` : ""}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <button
+                    onClick={() => setConfirmToggleReseller(res)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                      res.status === "active"
+                        ? "border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"
+                        : "border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                    }`}
+                  >
+                    {res.status === "active" ? "Desativar Revendedor" : "Ativar Revendedor"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* F-06: Trilha de Auditoria e Conformidade */}
+      <Card
+        title="Trilha de Auditoria e Eventos de Conformidade (F-06)"
+        actions={
+          <Button kind="ghost" onClick={() => void reloadAuditLogs()} disabled={auditLoading}>
+            {auditLoading ? "Carregando..." : "Atualizar Logs"}
+          </Button>
+        }
+      >
+        <p className="text-xs text-zinc-500 mb-3">
+          Histórico imutável de eventos sensíveis (criação de exames, pontos de coleta, aprovações, orçamentos e logins).
+        </p>
+
+        {/* Filtros de Auditoria */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 bg-zinc-50 p-3 rounded-xl border border-zinc-200">
+          <div>
+            <label className="block text-[11px] font-semibold text-zinc-600 mb-1">Filtrar por Ação</label>
+            <input
+              type="text"
+              placeholder="Ex: pharmacy.created, appointment.completed"
+              value={auditFilterAction}
+              onChange={(e) => setAuditFilterAction(e.target.value)}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-emerald-500"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-zinc-600 mb-1">Filtrar por Entidade</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ex: pharmacy, exam, quotation"
+                value={auditFilterEntity}
+                onChange={(e) => setAuditFilterEntity(e.target.value)}
+                className="w-full rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-emerald-500"
+              />
+              <Button kind="primary" onClick={() => void reloadAuditLogs()} disabled={auditLoading} className="text-xs">
+                Filtrar
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {auditLogs.length === 0 ? (
+          <Empty text="Nenhum registro de auditoria encontrado para os filtros selecionados." />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-zinc-200 bg-zinc-100 text-zinc-700 font-bold uppercase text-[10px]">
+                <tr>
+                  <th className="py-2.5 px-3">Data / Hora</th>
+                  <th className="py-2.5 px-3">Ação</th>
+                  <th className="py-2.5 px-3">Entidade</th>
+                  <th className="py-2.5 px-3">Usuário</th>
+                  <th className="py-2.5 px-3">IP / Detalhes</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 font-mono">
+                {auditLogs.slice(0, 50).map((log) => (
+                  <tr key={log.id} className="hover:bg-zinc-50 transition-colors">
+                    <td className="py-2 px-3 whitespace-nowrap text-zinc-600">
+                      {fmtDate(log.created_at)}
+                    </td>
+                    <td className="py-2 px-3 font-semibold text-zinc-900">
+                      <span className="rounded bg-zinc-100 px-1.5 py-0.5 border border-zinc-200">
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="py-2 px-3 text-zinc-700">
+                      {log.entity_type} #{log.entity_id}
+                    </td>
+                    <td className="py-2 px-3 text-zinc-600 truncate max-w-[140px]" title={log.user?.email || "Sistema"}>
+                      {log.user?.email || "Sistema"}
+                    </td>
+                    <td className="py-2 px-3 text-zinc-500 text-[11px] truncate max-w-[200px]" title={JSON.stringify(log.metadata || {})}>
+                      {log.ip ? `${log.ip} · ` : ""}{log.metadata ? JSON.stringify(log.metadata) : "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {auditLogs.length > 50 && (
+              <p className="text-center text-[11px] text-zinc-400 py-2 border-t border-zinc-100">
+                Exibindo os 50 registros mais recentes de {auditLogs.length}.
+              </p>
+            )}
+          </div>
+        )}
+      </Card>
+
       {/* Lançamentos de Comissão */}
       <Card title="Lançamentos de comissão">
         {comms.length === 0 && <Empty text="Nenhum lançamento." />}
@@ -1089,6 +1338,75 @@ export default function Laboratorio() {
         onConfirm={() => void handleDeactivateExam()}
         onCancel={() => setConfirmDeactivateExam(null)}
       />
+      {/* Modal de Criação de Revendedor (F-05) */}
+      {showResellerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
+            <h3 className="text-lg font-bold text-zinc-900">Cadastrar Novo Revendedor Parceiro</h3>
+            <p className="text-xs text-zinc-500">
+              O revendedor terá acesso ao painel do revendedor (/revendedor) para cadastrar suas próprias farmácias e técnicos vinculados ao seu laboratório.
+            </p>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Nome do Responsável / Razão Social</label>
+                <input
+                  type="text"
+                  value={resellerFirstName}
+                  onChange={(e) => setResellerFirstName(e.target.value)}
+                  placeholder="Distribuidora Saúde Total Ltda"
+                  className="w-full rounded-lg border border-zinc-300 p-2 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">E-mail Corporativo de Acesso</label>
+                <input
+                  type="email"
+                  value={resellerEmail}
+                  onChange={(e) => setResellerEmail(e.target.value)}
+                  placeholder="contato@distribuidorasaude.com.br"
+                  className="w-full rounded-lg border border-zinc-300 p-2 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Senha Inicial de Acesso</label>
+                <input
+                  type="password"
+                  value={resellerPassword}
+                  onChange={(e) => setResellerPassword(e.target.value)}
+                  placeholder="Mínimo 8 caracteres"
+                  className="w-full rounded-lg border border-zinc-300 p-2 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+              <Button kind="ghost" onClick={() => setShowResellerModal(false)}>Cancelar</Button>
+              <Button kind="primary" onClick={handleCreateReseller} disabled={busyId !== null}>
+                Cadastrar Revendedor
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmação de Alteração de Status de Revendedor */}
+      <ConfirmModal
+        isOpen={Boolean(confirmToggleReseller)}
+        title={confirmToggleReseller?.status === "active" ? "Desativar Revendedor" : "Ativar Revendedor"}
+        description={`Deseja realmente ${confirmToggleReseller?.status === "active" ? "desativar" : "ativar"} o revendedor "${confirmToggleReseller?.name || confirmToggleReseller?.email_read}"? ${
+          confirmToggleReseller?.status === "active"
+            ? "Ele não conseguirá gerenciar novas farmácias nem emitir orçamentos enquanto estiver inativo."
+            : "Ele voltará a ter acesso total à gestão da sua rede vinculada."
+        }`}
+        confirmText={confirmToggleReseller?.status === "active" ? "Sim, Desativar" : "Sim, Ativar"}
+        kind={confirmToggleReseller?.status === "active" ? "danger" : "primary"}
+        onConfirm={() => void handleToggleResellerStatus()}
+        onCancel={() => setConfirmToggleReseller(null)}
+      />
+
     </Shell>
   );
 }
