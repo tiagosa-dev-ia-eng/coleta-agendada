@@ -68,6 +68,84 @@ class ExamViewSet(GenericViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    def retrieve(self, request, pk=None):
+        exam = Exam.objects.filter(pk=pk).first()
+        if exam is None:
+            raise PermissionDenied()
+        ctx = {"request": request}
+        return Response(self.serializer_class(exam, context=ctx).data)
+
+    def partial_update(self, request, pk=None):
+        """Edição parcial de exame (name/active). Código imutável (referências)."""
+        if not self._is_manager(request):
+            raise PermissionDenied()
+        exam = Exam.objects.filter(pk=pk).first()
+        if exam is None:
+            raise PermissionDenied()
+        payload = {}
+        if "name" in request.data:
+            name = str(request.data.get("name") or "").strip()
+            if not name:
+                return Response(
+                    {
+                        "error": {
+                            "code": "invalid",
+                            "message": "name não pode ficar vazio.",
+                            "details": {},
+                        }
+                    },
+                    status=400,
+                )
+            payload["name"] = name
+        if "active" in request.data:
+            payload["active"] = bool(request.data.get("active"))
+        if "code" in request.data:
+            return Response(
+                {
+                    "error": {
+                        "code": "invalid",
+                        "message": "Código do exame é imutável.",
+                        "details": {},
+                    }
+                },
+                status=400,
+            )
+        if payload:
+            for key, value in payload.items():
+                setattr(exam, key, value)
+            exam.save(update_fields=list(payload) + ["updated_at"])
+            audit_record(
+                action="exam.updated",
+                entity_type="catalog.Exam",
+                entity_id=exam.pk,
+                user=request.user,
+                ip=request.META.get("REMOTE_ADDR"),
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+                metadata={"code": exam.code, "changed": list(payload)},
+            )
+        ctx = {"request": request}
+        return Response(self.serializer_class(exam, context=ctx).data)
+
+    def destroy(self, request, pk=None):
+        """Desativa (soft delete) o exame — preços/histórico preservados."""
+        if not self._is_manager(request):
+            raise PermissionDenied()
+        exam = Exam.objects.filter(pk=pk).first()
+        if exam is None:
+            raise PermissionDenied()
+        exam.active = False
+        exam.save(update_fields=["active", "updated_at"])
+        audit_record(
+            action="exam.deactivated",
+            entity_type="catalog.Exam",
+            entity_id=exam.pk,
+            user=request.user,
+            ip=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            metadata={"code": exam.code},
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     def set_price(self, request, pk=None):
         """Define/atualiza o preço do exame PARA O PRÓPRIO laboratório (G-01)."""
         if not self._is_manager(request):

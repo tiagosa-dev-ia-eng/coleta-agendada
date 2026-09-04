@@ -8,6 +8,14 @@ urlpatterns = [
         views.ExamViewSet.as_view({"get": "list", "post": "create"}),
         name="exam-list",
     ),
+
+    path(
+        "exams/<int:pk>",
+        views.ExamViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
+        ),
+        name="exam-detail",
+    ),
     path(
         "exams/<int:pk>/price",
         views.ExamViewSet.as_view({"post": "set_price"}),
