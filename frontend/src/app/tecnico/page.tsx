@@ -25,6 +25,7 @@ type Appt = {
   patient?: { name?: string; phone?: string };
   location?: string;
   completed_at?: string | null;
+  pharmacy_name?: string | null;
 };
 
 type Commission = {
