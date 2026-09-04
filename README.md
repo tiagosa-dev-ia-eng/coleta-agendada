@@ -36,6 +36,7 @@ Plataforma que digitaliza o processo de solicitação, orçamento, aprovação, 
 - **Guia vivo do backend (IAs de código):** `docs/BACKEND_GUIA_IA.md` — atualizar a cada mudança no backend.
 - **Como trabalhar:** leia `AGENTS.md` antes de codificar.
 - **Roteiro de execução:** `PLANO_DE_IMPLEMENTACAO.md`.
+- **Versão interna:** `VERSION` (semver) + `CHANGELOG.md` — **a cada mudança** incremente e publique no GitHub; consultar via `GET /api/v1/version`.
 
 ## Como rodar (M0 — bootstrap)
 
