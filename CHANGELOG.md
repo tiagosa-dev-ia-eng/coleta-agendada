@@ -37,3 +37,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.24 (backend) | 04/09/2026 | D-05 receita multifile + D-06/D-07 resultado de exame (URL + página pública por token) + 4 testes. |
 | 1.1.25 (backend) | 04/09/2026 | docs: D-05/D-06/D-07 no registro, guia vivo e doc de frontend (F-10/F-11). |
 | 1.1.26 | 04/09/2026 | Merge: integração das linhas backend (D-05…D-07) e frontend (F-07/F-09, login demo, previews). |
+| 1.1.27 | 04/09/2026 | chore: nova linha final (estilo) em collection_points/services.py. |
