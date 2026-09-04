@@ -6,6 +6,13 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.19 | 04/09/2026 | feat(resellers-audit): gestão completa de revendedores (F-05) e trilha de auditoria e conformidade (F-06). |
+| 1.1.18 | 04/09/2026 | feat(calendar-f04): calendário interativo multi-formato (semana/dia/WhatsApp) e CRUD completo de exames no laboratório (F-04). |
+| 1.1.17 | 04/09/2026 | feat(laboratorio): gestão de pontos de coleta (F-02/D-03: criação, janelas e técnicos) e pagamentos (F-03: cancel/refund). |
+| 1.1.16 | 04/09/2026 | feat(tecnico): gestão de pontos de coleta D-03 (abrir/fechar turno) e atalhos rápidos de campo (GPS/WhatsApp) no /tecnico (F-02). |
+| 1.1.15 | 04/09/2026 | feat(pwa-ui): base PWA (manifest.ts, viewport safe-area) e ergonomia de botões 48px + ConfirmModal. |
+| 1.1.14 | 04/09/2026 | feat(version): endpoint GET /api/v1/version e indicador dinâmico de versão no rodapé global (F-08). |
+| 1.1.13 | 04/09/2026 | docs(ux-pwa): relatório de análise técnica de UX, ergonomia para técnicos de campo e diretrizes PWA (docs/RELATORIO_ANALISE_TECNICA_UX_PWA.md). |
 | 1.1.0 | 04/09/2026 | Controle de versão interna (VERSION, scripts/bump-version.sh, targets make version-*, endpoint GET /api/v1/version). REGRA GERAL registrada: toda mudança incrementa a versão; validações de regra de negócio sempre no backend. |
 | 1.0.0 | 04/09/2026 | Baseline: M0–M9, D-01 (local de coleta mais próximo), D-03 (entidade CollectionPoint: agendamento/disponibilidade/técnico/aberto-fechado), D-04 (contatos WhatsApp/BSUID) e documentação viva (até commit bdf0e94). |
 | 1.1.1 | 04/09/2026 | CRUD de exames completo: retrieve, PATCH (name/active; código imutável) e DELETE soft (desativação) em /api/v1/exams/{pk} + testes. |
@@ -24,3 +31,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.14 | 04/09/2026 | Provedor WhatsApp Z-PRO/Dorislabs (B-03): apps/whatsapp/gateway.py (SimulatorProvider + ZProGateway env ZPRO_BASE_URL/ZPRO_TOKEN/ZPRO_SEND_PATH) e hook de envio outbound pós-resposta (erro não derruba o pipeline). Validação dos endpoints/payload com a coleção Z-PRO pendente de credenciais. Testes (3). |
 | 1.1.15 | 04/09/2026 | LGPD MVP (B-04): PatientConsent (migração 0002) + endpoints /patients/me/consent (GET/POST), /export e /anonymize (exclusão lógica, confirma DELETE) com auditoria + testes (4). Retenção/política de guarda: decisão pendente. |
 | 1.1.16 | 04/09/2026 | docs: status de B-01/B-03/B-04 e histórico no guia vivo. |
+| 1.1.20 | 04/09/2026 | Merge das linhas backend (1.1.13–1.1.16: Pagar.me, Z-PRO, LGPD, docs) e frontend (1.1.15–1.1.19: F-02/F-03/F-04/F-05/F-06, UX PWA). |

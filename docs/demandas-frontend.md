@@ -17,13 +17,13 @@ Fonte da verdade: `AGENTS.md`, `docs/demandas.md`, `docs/BACKEND_GUIA_IA.md` e o
 | ID | Tarefa | Área | Depende de | Endpoints prontos |
 |---|---|---|---|---|
 | F-01 | **D-02 — Publicidade/parceiros no perfil paciente** (cards) | paciente | Definição de conteúdo (fazer pergunta ao PO) | Endpoint de parceiros será criado no backend após definição |
-| F-02 | Gestão de **pontos de coleta** (criar/editar, janelas, designar técnico, abrir/fechar) | laboratorio/tecnico | — | `/api/v1/collection-points…` |
-| F-03 | Ações de pagamento (cancelar link, estornar confirmado) | laboratorio | — | `POST /payments/{id}/cancel`, `POST /payments/{id}/refund` |
-| F-04 | CRUD de exames (criar/editar/desativar) | laboratorio (admin) | — | `/api/v1/exams`, `/api/v1/exams/{id}` |
-| F-05 | Edição de revendedor (status) | laboratorio | — | `GET/PATCH /api/v1/resellers/{id}` |
-| F-06 | Visualização da auditoria | superuser | — | `GET /api/v1/audit` (filtros) |
+| F-02 | Gestão de **pontos de coleta** (criar/editar, janelas, designar técnicos, abrir/fechar) | laboratorio/tecnico | — | `/api/v1/collection-points…` (✅ v1.1.17) |
+| F-03 | Ações de pagamento (cancelar link, estornar confirmado) | laboratorio | — | `POST /payments/{id}/cancel`, `POST /payments/{id}/refund` (✅ v1.1.17) |
+| F-04 | CRUD de exames (criar/editar/desativar soft-delete) | laboratorio (admin) | — | `/api/v1/exams`, `/api/v1/exams/{id}` (✅ v1.1.18) |
+| F-05 | Edição e cadastro de revendedor (criar/ativar/desativar) | laboratorio | — | `GET/POST /api/v1/resellers`, `PATCH /api/v1/resellers/{id}` (✅ v1.1.19) |
+| F-06 | Visualização da trilha de auditoria com filtros por ação/entidade | superuser/laboratorio | — | `GET /api/v1/audit` (✅ v1.1.19) |
 | F-07 | Contatos WhatsApp por perfil (CRUD + edição) | laboratorio/farmacia/… | — | `/api/v1/whatsapp/contacts…` |
-| F-08 | Indicador de versão da aplicação | global | — | `GET /api/v1/version` |
+| F-08 | Indicador de versão da aplicação | global | — | `GET /api/v1/version` (✅ v1.1.14) |
 | F-09 | Botão de localização no simulador já existe; adequar copy do ponto mais próximo (horário/estado) | whatsapp-simulator | — | webhook |
 
 ## 3. Endpoints prontos (resumo para as telas)

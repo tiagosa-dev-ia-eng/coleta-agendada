@@ -1,7 +1,9 @@
 """Rotas da API v1 (doc 07). Módulos novos entram aqui por marco."""
 from django.urls import include, path
+from apps.core import views as core_views
 
 urlpatterns = [
+    path("version", core_views.version, name="api-version"),
     path("", include("apps.accounts.urls")),
     path("", include("apps.organizations.urls")),
     path("", include("apps.collection_points.urls")),
