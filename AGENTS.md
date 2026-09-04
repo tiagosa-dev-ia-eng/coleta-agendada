@@ -162,6 +162,8 @@ Cadeia crítica: **IA → rascunho → validação humana → orçamento final �
 - Mudanças estruturais relevantes devem atualizar este AGENTS.md e/ou o `PLANO_DE_IMPLEMENTACAO.md`.
 - Toda mudança/melhoria no **backend** DEVE atualizar o `docs/BACKEND_GUIA_IA.md` (seções afetadas + histórico) — REGRA GERAL.
 - Demandas do cliente são registradas em `docs/demandas.md` e implementadas em **commit separado** documentando a demanda.
+- **Controle de versão interna (REGRA GERAL):** a cada mudança incremente a versão (`scripts/bump-version.sh` patch/minor/major — `make version-patch|version-minor|version-major`) e mantenha `VERSION` + `CHANGELOG.md` atualizados e **publicados no GitHub**.
+- **Validações de regra de negócio são SEMPRE no backend (REGRA GERAL):** em serviços de domínio/serializers/endpoints — o frontend nunca decide/valida regra (maior flexibilidade de desenvolvimento).
 
 ### Comandos padrão (registrados no M0)
 
@@ -177,6 +179,8 @@ Tudo via `make` na raiz (`make help` lista os alvos):
 | `make frontend-dev` | Next.js dev em :3000 (variáveis em `frontend/.env`, ver .env.example) |
 | `make frontend-build` | `frontend-lint` | build / eslint |
 | `make smoke` | curl nos health checks do backend |
+| `make version` | mostra a versão interna (VERSION) |
+| `make version-patch` (minor/major) | incrementa a versão (ver scripts/bump-version.sh) |
 
 Notas de ambiente desta máquina: (1) o Python do sistema não tem `ensurepip` e o sudo está
 indisponível, então o backend usa `backend/.pylibs` (pip `--target`) em vez de `.venv` —

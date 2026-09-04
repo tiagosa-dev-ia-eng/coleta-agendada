@@ -219,3 +219,15 @@ backend/
 | 04/09/2026 | **D-03 (geoloc/chatbot):** geolocalização migra p/ CollectionPoint; Pharmacy/Laboratory sem coordenadas (migração orgs 0004); chatbot responde ponto + horário + estado (`02d96c4`). | §4, §5 |
 | 04/09/2026 | **D-04 (API):** `/api/v1/whatsapp/contacts` com escopo por papel e regra 1 contato p/ técnico/revenda (`f98647a`). | §6 |
 | 04/09/2026 | Documentação (docs 06/07/08, demandas, guia) consolidada para D-03/D-04. | este arquivo |
+| 1.1.0 | 04/09/2026 | Controle de versão interna (VERSION/bump/endpoint /version) + regra geral de validação no backend. | §10/§11 |
+
+---
+
+## 11. Controle de versão interna (REGRA GERAL)
+
+- Arquivo-fonte: `VERSION` (raiz, semver MAJOR.MINOR.PATCH) + `CHANGELOG.md`.
+- A cada mudança: `bash scripts/bump-version.sh [patch|minor|major]` (ou
+  `make version-patch|version-minor|version-major`; default patch), atualize
+  o CHANGELOG e **publique no GitHub** (mesmo commit/push da mudança).
+- Endpoint: `GET /api/v1/version` → `{"name", "version"}` (lê VERSION).
+- Histórico completo: tabela da §10 abaixo.
