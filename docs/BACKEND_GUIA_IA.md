@@ -220,6 +220,8 @@ backend/
 | 04/09/2026 | **D-04 (API):** `/api/v1/whatsapp/contacts` com escopo por papel e regra 1 contato p/ técnico/revenda (`f98647a`). | §6 |
 | 04/09/2026 | Documentação (docs 06/07/08, demandas, guia) consolidada para D-03/D-04. | este arquivo |
 | 1.1.0 | 04/09/2026 | Controle de versão interna (VERSION/bump/endpoint /version) + regra geral de validação no backend. | §10/§11 |
+| 1.1.1–1.1.5 | 04/09/2026 | Cobertura de endpoints: exames (CRUD), pagamentos (cancel/refund), auditoria (GET /audit, superusuário), contatos WhatsApp (PATCH) e revenda (GET/PATCH). | §6 |
+| 1.1.6 | 04/09/2026 | Documentação desta entrega (endpoints listados acima). | este arquivo |
 
 ---
 

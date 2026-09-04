@@ -13,3 +13,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.3 | 04/09/2026 | Auditoria: GET /api/v1/audit (superusuário) com filtros (action/entity_type/entity_id/user_id/start/end/limit) + testes. Escopo por laboratório: evolução (exige laboratório no AuditLog). |
 | 1.1.4 | 04/09/2026 | Contatos WhatsApp: PATCH /api/v1/whatsapp/contacts/{id} (nome/número/bsuid/principal; dono imutável; escopo por perfil) + teste. |
 | 1.1.5 | 04/09/2026 | Revenda: GET e PATCH /api/v1/resellers/{id} (status; laboratório) + testes. |
+| 1.1.6 | 04/09/2026 | docs: guia vivo do backend — endpoints novos de cobertura (exames/pagamentos/auditoria/contatos/revenda) no §6 e histórico. |
