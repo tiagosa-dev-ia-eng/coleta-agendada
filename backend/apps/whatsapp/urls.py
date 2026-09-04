@@ -1,6 +1,7 @@
 from django.urls import path
 
 from apps.whatsapp import views
+from apps.whatsapp.views_contacts import WhatsAppContactViewSet
 
 urlpatterns = [
     path(
@@ -17,5 +18,15 @@ urlpatterns = [
         "whatsapp/conversations/by-phone/<str:phone>",
         views.ConversationByPhoneView.as_view(),
         name="whatsapp-conversation-by-phone",
+    ),
+    path(
+        "whatsapp/contacts",
+        WhatsAppContactViewSet.as_view({"get": "list", "post": "create"}),
+        name="whatsapp-contact-list",
+    ),
+    path(
+        "whatsapp/contacts/<int:pk>",
+        WhatsAppContactViewSet.as_view({"get": "retrieve", "delete": "destroy"}),
+        name="whatsapp-contact-detail",
     ),
 ]
