@@ -195,3 +195,54 @@ class RequestViewSet(GenericViewSet):
             MedicalOrderSerializer(order, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
+
+    def upload_medical_attachments(self, request, pk=None):
+        """Recebe VÁRIAS imagens/documentos (receita) de uma vez (D-05)."""
+        req = CollectionRequest.objects.filter(pk=pk).first()
+        if req is None or not _can_view(request.user, req):
+            raise PermissionDenied()
+        files = request.FILES.getlist("files")
+        if not files:
+            raise InvalidFile(detail="Envie um ou mais arquivos no campo 'files'.")
+        created = []
+        for file in files:
+            suffix = Path(file.name).suffix.lower()
+            content_type = (file.content_type or "").lower()
+            valid_type = content_type == "application/pdf" or content_type.startswith("image/")
+            if suffix not in ALLOWED_MEDICAL_EXTENSIONS or not valid_type:
+                raise InvalidFile(
+                    detail=(
+                        "Formato não suportado. Envie PDF ou imagem "
+                        f"({', '.join(sorted(ALLOWED_MEDICAL_EXTENSIONS))})."
+                    )
+                )
+            if file.size > settings.MAX_MEDICAL_UPLOAD_BYTES:
+                limit_mb = settings.MAX_MEDICAL_UPLOAD_BYTES // (1024 * 1024)
+                raise InvalidFile(detail=f"Arquivo excede o limite de {limit_mb} MB.")
+            order = MedicalOrder.objects.create(
+                request=req,
+                file=file,
+                mime_type=content_type,
+                original_name=file.name,
+                size=file.size,
+                uploaded_by=request.user,
+            )
+            audit_record(
+                action="medical_order.uploaded",
+                entity_type="requests.MedicalOrder",
+                entity_id=order.pk,
+                user=request.user,
+                ip=request.META.get("REMOTE_ADDR"),
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+                metadata={
+                    "protocol": req.protocol,
+                    "original_name": order.original_name,
+                    "size": order.size,
+                    "batch": "prescription",
+                },
+            )
+            created.append(order)
+        return Response(
+            MedicalOrderSerializer(created, many=True, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
