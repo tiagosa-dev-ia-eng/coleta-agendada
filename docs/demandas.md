@@ -38,7 +38,7 @@ Validações de regra de negócio: **sempre no backend** (AGENTS.md §8).
 | B-02 | Infra cloud/deploy (provedor, domínio, storage, worker) | Escolhas de infra | G-04 |
 | B-03 | Provedor WhatsApp real (payload/templates/mídias; contatos D-04 prontos) | Provedor | G-05 |
 | B-04 | LGPD: consentimento, retenção, exclusão/correção | Política | G-06 |
-| B-05 | Validade/invalidação do orçamento pós-edição; versão aprovada | Confirmar RN-ORC-004/005 | G-08 |
+| B-05 | Validade/invalidação do orçamento pós-edição; versão aprovada | RN-ORC-004/005 implementados (v1.1.12); prazo de validade do orçamento ainda exige decisão | G-08 |
 | B-06 | Reagendamento/cancelamento de agendamento | Política | G-09 |
 | B-07 | Parâmetros de IA (modelo/prompt/temperatura/confiança/fallback) | Config | G-10 |
 | B-08 | Origem oficial de preços; preço por região/parceiro | Origem/regra | G-01 evolução |

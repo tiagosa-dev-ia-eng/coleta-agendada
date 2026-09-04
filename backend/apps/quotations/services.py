@@ -61,12 +61,27 @@ class QuotationService:
         if request_obj.laboratory_id is None:
             request_obj.laboratory = lab
             request_obj.save(update_fields=["laboratory", "updated_at"])
-        if request_obj.status == RequestStatus.REQUESTED:
+        status = request_obj.status
+        if status == RequestStatus.REQUESTED:
             RequestStateService.transition(
                 request_obj, RequestStatus.QUOTE_DRAFT, changed_by=created_by, origin="system"
             )
-        elif request_obj.status != RequestStatus.QUOTE_DRAFT:
-            raise QuotationError(detail="Solicitação não está em estado de rascunho de orçamento.")
+        elif status in (RequestStatus.WAITING_HUMAN_VALIDATION, RequestStatus.QUOTE_SENT):
+            # RN-ORC-004: edição após validação/envio cria NOVA versão (rascunho);
+            # a versão validada/enviada permanece imutável no histórico.
+            RequestStateService.transition(
+                request_obj,
+                RequestStatus.QUOTE_DRAFT,
+                changed_by=created_by,
+                origin="user",
+                reason="Revisão gera nova versão do orçamento (RN-ORC-004)",
+            )
+        elif status != RequestStatus.QUOTE_DRAFT:
+            # RN-ORC-005: versão aprovada é imutável; demais estados não aceitam nova versão
+            raise QuotationError(
+                detail="Solicitação não aceita nova versão do orçamento "
+                "(versão aprovada é imutável — RN-ORC-005)."
+            )
 
         quote = Quotation.objects.create(
             request=request_obj,

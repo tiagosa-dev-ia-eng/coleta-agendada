@@ -126,3 +126,54 @@ def test_patient_sees_only_own_quotations(make_user, auth_client):
     lab_list = lab_client.get(f"/api/v1/requests/{req1}/quotations")
     assert lab_list.status_code == 200
     assert len(lab_list.json()) == 1
+
+
+# ---------- B-05 / RN-ORC-004/005: revisão vira nova versão; aprovada imutável ----------
+
+def test_revision_after_validation_creates_new_version(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    lab_client = auth_client(lab_user)
+    _, _, req_id = _patient(make_user, auth_client, email="rev@exemplo.com")
+    draft = _draft(lab_client, req_id, [{"exam_code": "HEMO"}]).json()
+    final = lab_client.post(f"/api/v1/quotations/{draft['id']}/validate", format="json").json()
+    assert (
+        lab_client.get(f"/api/v1/requests/{req_id}").json()["status"]
+        == "WAITING_HUMAN_VALIDATION"
+    )
+    # edição pós-validação: cria NOVA versão rascunho e volta a QUOTE_DRAFT
+    revision = _draft(lab_client, req_id, [{"exam_code": "HEMO"}, {"exam_code": "GLI"}])
+    assert revision.status_code == 201, revision.content
+    body = revision.json()
+    assert body["version"] > final["version"]
+    assert body["quotation_type"] == "draft"
+    assert lab_client.get(f"/api/v1/requests/{req_id}").json()["status"] == "QUOTE_DRAFT"
+    # versão final validada anterior permanece imutável no histórico
+    old = lab_client.get(f"/api/v1/quotations/{final['id']}").json()
+    assert old["is_validated"] is True
+
+
+def test_revision_after_send_allowed(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    lab_client = auth_client(lab_user)
+    _, _, req_id = _patient(make_user, auth_client, email="rev2@exemplo.com")
+    draft = _draft(lab_client, req_id, [{"exam_code": "HEMO"}]).json()
+    final = lab_client.post(f"/api/v1/quotations/{draft['id']}/validate", format="json").json()
+    lab_client.post(f"/api/v1/quotations/{final['id']}/send", format="json")
+    # enviado (ainda não aprovado): revisão permitida (RN-ORC-004)
+    rev = _draft(lab_client, req_id, [{"exam_code": "GLI"}])
+    assert rev.status_code == 201, rev.content
+    assert lab_client.get(f"/api/v1/requests/{req_id}").json()["status"] == "QUOTE_DRAFT"
+
+
+def test_no_revision_after_approved(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    lab_client = auth_client(lab_user)
+    patient, patient_client, req_id = _patient(make_user, auth_client, email="rev3@exemplo.com")
+    draft = _draft(lab_client, req_id, [{"exam_code": "HEMO"}]).json()
+    final = lab_client.post(f"/api/v1/quotations/{draft['id']}/validate", format="json").json()
+    lab_client.post(f"/api/v1/quotations/{final['id']}/send", format="json")
+    patient_client.post(f"/api/v1/quotations/{final['id']}/approve", format="json")
+    assert lab_client.get(f"/api/v1/requests/{req_id}").json()["status"] == "APPROVED"
+    blocked = _draft(lab_client, req_id, [{"exam_code": "HEMO"}])
+    assert blocked.status_code == 409
+    assert "RN-ORC-005" in blocked.json()["error"]["message"]

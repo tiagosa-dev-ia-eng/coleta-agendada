@@ -48,10 +48,12 @@ TRANSITIONS = {
     },
     RequestStatus.WAITING_HUMAN_VALIDATION: {
         RequestStatus.QUOTE_SENT,
+        RequestStatus.QUOTE_DRAFT,  # revisão RN-ORC-004 (nova versão)
         RequestStatus.CANCELED,
     },
     RequestStatus.QUOTE_SENT: {
         RequestStatus.APPROVED,
+        RequestStatus.QUOTE_DRAFT,  # revisão RN-ORC-004 (nova versão)
         RequestStatus.CANCELED,
     },
     RequestStatus.APPROVED: {RequestStatus.SCHEDULED},
