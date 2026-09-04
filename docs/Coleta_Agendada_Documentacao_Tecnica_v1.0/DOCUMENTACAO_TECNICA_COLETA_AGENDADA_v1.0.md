@@ -154,3 +154,29 @@ Ainda precisam ser confirmados:
 ## 13. Documentos complementares
 
 Este arquivo é um consolidado. O pacote inclui documentos separados para requisitos, arquitetura, RBAC, fluxo, banco, API, IA, comissões, segurança, observabilidade, deploy, testes, backlog e ADRs.
+
+
+---
+
+# Adendo v1.1 — Demandas do alinhamento (04/09/2026)
+
+Este adendo registra as decisões posteriores ao pacote original (docs 01–18). O
+registro vivo completo fica em `docs/demandas.md` (raiz do projeto).
+
+## D-01 — Local de coleta mais próximo (implementado)
+
+- Ponto de coleta pode ser **uma farmácia ou um laboratório** (decisão do usuário).
+- O paciente envia a localização pelo chat (WhatsApp + IA); o chatbot devolve o
+  local de coleta mais próximo, identificando o tipo ("é a farmácia X…" / "é o
+  laboratório Y…"), com endereço e distância aproximada.
+- Candidatos: laboratório do canal + farmácias ativas da rede, ambos com
+  latitude/longitude cadastradas (novos campos em Laboratory e Pharmacy);
+  distância Haversine, resolução determinística SEM LLM.
+- Sem localização válida → chatbot pede o compartilhamento; sem ponto
+  georreferenciado → encaminha a humano.
+
+## D-02 — Publicidade de farmácias/fornecedores no perfil do paciente
+
+PENDENTE — aguarda definição de conteúdo/fonte/regra de exibição.
+
+> Guia vivo do backend para outras IAs de codificação: `docs/BACKEND_GUIA_IA.md`.

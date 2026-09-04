@@ -24,12 +24,16 @@ Plataforma que digitaliza o processo de solicitação, orçamento, aprovação, 
 ├── frontend/                        # Web app Next.js
 ├── infra/                           # docker-compose, nginx, CI
 └── docs/
-    └── Coleta_Agendada_Documentacao_Tecnica_v1.0/   # documentação-fonte
+    ├── Coleta_Agendada_Documentacao_Tecnica_v1.0/   # documentação-fonte (docs 01–18)
+    ├── demandas.md                      # demandas do alinhamento (D-01/D-02)
+    └── BACKEND_GUIA_IA.md               # guia vivo do backend p/ IAs de código
 ```
 
 ## Documentação
 
 - **Fonte da verdade:** `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18).
+- **Demandas do alinhamento:** `docs/demandas.md` (D-01/D-02).
+- **Guia vivo do backend (IAs de código):** `docs/BACKEND_GUIA_IA.md` — atualizar a cada mudança no backend.
 - **Como trabalhar:** leia `AGENTS.md` antes de codificar.
 - **Roteiro de execução:** `PLANO_DE_IMPLEMENTACAO.md`.
 

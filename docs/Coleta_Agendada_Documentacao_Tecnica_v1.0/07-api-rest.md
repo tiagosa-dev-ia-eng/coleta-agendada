@@ -98,14 +98,24 @@ POST /api/v1/commissions/{id}/mark-paid
 /api/v1/patients
 ```
 
+**Locais de coleta (D-01):** `Laboratory` e `Pharmacy` aceitam (GET/POST/PATCH)
+`address`, `city`, `state`, `zip_code`, `latitude` e `longitude` — dados usados
+pelo chatbot para indicar o local de coleta mais próximo (ver §10).
+
 ## 10. WhatsApp
 
 ```http
 POST /api/v1/webhooks/whatsapp
 GET  /api/v1/whatsapp/conversations
-GET  /api/v1/whatsapp/conversations/{id}
-GET  /api/v1/whatsapp/conversations/{id}/messages
+GET  /api/v1/whatsapp/conversations/by-phone/{phone}
+DELETE /api/v1/whatsapp/conversations/by-phone/{phone}   // limpa memória (homologação)
 ```
+
+**Localização (D-01):** `POST /webhooks/whatsapp` aceita, além de `body`,
+um objeto `location` (`{"latitude": ..., "longitude": ...}`, como o WhatsApp
+envia) ou texto com o par "lat, lon". Com localização válida, o pipeline
+responde o **local de coleta mais próximo** (farmácia ou laboratório) de forma
+determinística — ver `docs/demandas.md` D-01 e `docs/BACKEND_GUIA_IA.md`.
 
 ## 11. Padrão de erro
 

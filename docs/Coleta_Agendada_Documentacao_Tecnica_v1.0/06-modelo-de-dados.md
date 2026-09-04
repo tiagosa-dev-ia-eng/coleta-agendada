@@ -43,8 +43,16 @@ O modelo abaixo é **PROPOSTO** a partir dos requisitos confirmados.
 - id
 - name
 - document
+- owner_id
 - status
 - created_at
+- updated_at
+- address
+- city
+- state
+- zip_code
+- latitude
+- longitude
 
 ### Reseller
 - id
@@ -60,6 +68,11 @@ O modelo abaixo é **PROPOSTO** a partir dos requisitos confirmados.
 - name
 - document
 - address
+- city
+- state
+- zip_code
+- latitude
+- longitude
 - status
 
 ### Technician

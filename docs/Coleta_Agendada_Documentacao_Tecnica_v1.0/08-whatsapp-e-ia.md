@@ -69,6 +69,23 @@ A IA não deve:
 }
 ```
 
+## 5.1 Local de coleta mais próximo (D-01 — implementado 04/09/2026)
+
+Quando o paciente **compartilha a localização** (payload `location` com
+`latitude`/`longitude`, como o WhatsApp envia, ou texto "lat, lon"), o
+pipeline resolve o **local de coleta mais próximo de forma determinística
+(SEM chamada de LLM)**: candidatos = laboratório do canal (com coordenadas)
+e farmácias ativas da rede com coordenadas; vence o de menor distância
+(Haversine). A resposta identifica o tipo ("é a farmácia X…" / "é o
+laboratório Y…"), endereço e distância aproximada.
+
+- Sem localização válida: o chatbot **pede o compartilhamento**.
+- Sem ponto georreferenciado na rede: **encaminha a humano** (não inventa local).
+- Pergunta "qual o local de coleta mais próximo?" sem localização: pede o
+  compartilhamento (não escala a humano).
+
+Detalhes e regras: `docs/demandas.md` D-01 + `docs/BACKEND_GUIA_IA.md`.
+
 ## 6. Regra de confiança
 
 **PROPOSTO:** qualquer extração que possa alterar preço, exame ou agenda deve permitir encaminhamento para validação humana quando a confiança for baixa.

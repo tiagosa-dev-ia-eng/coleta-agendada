@@ -186,6 +186,23 @@ Laboratório deve possuir relatórios financeiros e de comissões.
 **Prioridade:** P1  
 **Status:** CONFIRMADO.
 
+## Demandas do alinhamento com o cliente (registro vivo: `docs/demandas.md`)
+
+### D-01 — Devolver o local de coleta mais próximo (chatbot)
+Quando o paciente envia a localização pelo chat (WhatsApp + IA), o chatbot
+devolve o **local de coleta mais próximo**. **Ponto de coleta pode ser:
+uma farmácia ou um laboratório** (decisão do usuário, 04/09/2026).
+
+**Status:** CONFIRMADO (implementado 04/09/2026; regras e detalhes em
+`docs/demandas.md` D-01 e no `docs/BACKEND_GUIA_IA.md`). A implementação
+resolve de forma determinística (sem LLM) entre o laboratório do canal e as
+farmácias ativas da rede com coordenadas cadastradas (Haversine).
+
+### D-02 — Publicidade de farmácias/fornecedores no perfil do paciente
+Ainda sem definição de conteúdo/fonte/regra de exibição.
+
+**Status:** PENDENTE.
+
 ## Requisitos ainda sem definição suficiente
 
 - política de reagendamento;
@@ -195,7 +212,6 @@ Laboratório deve possuir relatórios financeiros e de comissões.
 - catálogo de exames;
 - origem oficial dos preços;
 - disponibilidade de agenda;
-- geolocalização;
 - notificações por e-mail/SMS;
 - política de anexos.
 

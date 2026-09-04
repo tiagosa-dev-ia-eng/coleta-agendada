@@ -49,6 +49,8 @@ Esse pacote contém 18 documentos numerados (`01-…` a `18-…`), o consolidado
 | **Regras obrigatórias para IA de codificação** | `16-guia-para-ia-de-codificacao.md` |
 | User stories e backlog inicial (US-xxx) | `17-user-stories-e-backlog-inicial.md` |
 | Decisões arquiteturais (ADR-001..010) | `18-decisoes-arquiteturais-adr.md` |
+| **Demandas do alinhamento (D-xx)** | `docs/demandas.md` — registro vivo das demandas do cliente |
+| **Guia vivo do backend p/ IAs de código** | `docs/BACKEND_GUIA_IA.md` — REGRA GERAL: atualizar a cada mudança no backend |
 
 O plano de implementação do projeto está em `PLANO_DE_IMPLEMENTACAO.md` (raiz).
 
@@ -157,6 +159,8 @@ Cadeia crítica: **IA → rascunho → validação humana → orçamento final �
 - Commits pequenos e descritivos (Conventional Commits recomendado: `feat:`, `fix:`, `test:`, `docs:`, `chore:`).
 - Secrets nunca no repositório: usar variáveis de ambiente (doc 13 §4 lista as esperadas).
 - Mudanças estruturais relevantes devem atualizar este AGENTS.md e/ou o `PLANO_DE_IMPLEMENTACAO.md`.
+- Toda mudança/melhoria no **backend** DEVE atualizar o `docs/BACKEND_GUIA_IA.md` (seções afetadas + histórico) — REGRA GERAL.
+- Demandas do cliente são registradas em `docs/demandas.md` e implementadas em **commit separado** documentando a demanda.
 
 ### Comandos padrão (registrados no M0)
 
