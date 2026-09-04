@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import Shell from "@/components/Shell";
 import { CalendarView } from "@/components/CalendarView";
 import { Button, Card, ConfirmModal, Empty, Notice, StatusBadge, fmtDate, money } from "@/components/ui";
+import WhatsAppContactsCard from "@/components/WhatsAppContactsCard";
 import { authedFetch } from "@/lib/auth";
 
 type RequestRow = {
@@ -1406,6 +1407,9 @@ export default function Laboratorio() {
         onConfirm={() => void handleToggleResellerStatus()}
         onCancel={() => setConfirmToggleReseller(null)}
       />
+
+      {/* F-07: Contatos WhatsApp por Perfil (Laboratório Central) */}
+      <WhatsAppContactsCard ownerKind="laboratory" title="Canais Oficiais de WhatsApp do Laboratório (F-07)" />
 
     </Shell>
   );

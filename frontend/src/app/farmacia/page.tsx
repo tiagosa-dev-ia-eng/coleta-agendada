@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import Shell from "@/components/Shell";
 import { CalendarView } from "@/components/CalendarView";
 import { Button, Card, Empty, Notice, StatusBadge, fmtDate, money } from "@/components/ui";
+import WhatsAppContactsCard from "@/components/WhatsAppContactsCard";
 import { authedFetch } from "@/lib/auth";
 
 type Appt = {
@@ -168,6 +169,9 @@ export default function Farmacia() {
           ))}
         </div>
       </Card>
+
+      {/* F-07: Contato WhatsApp da Farmácia Parceira */}
+      <WhatsAppContactsCard ownerKind="pharmacy" title="Canal Oficial de WhatsApp da Farmácia (F-07)" />
     </Shell>
   );
 }

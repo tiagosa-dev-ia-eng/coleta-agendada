@@ -83,6 +83,7 @@ export function Card({
   children: ReactNode;
   actions?: ReactNode;
   className?: string;
+  key?: string | number;
 }) {
   return (
     <section className={`rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-sm sm:p-5 ${className}`}>
