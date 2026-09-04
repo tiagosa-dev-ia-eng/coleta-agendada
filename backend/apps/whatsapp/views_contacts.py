@@ -148,6 +148,15 @@ class WhatsAppContactViewSet(GenericViewSet):
             self.serializer_class(contact).data, status=status.HTTP_201_CREATED
         )
 
+    def partial_update(self, request, pk=None):
+        contact = self.get_queryset().filter(pk=pk).first()
+        if contact is None:
+            raise PermissionDenied()
+        ser = self.serializer_class(contact, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        contact = ser.save()
+        return Response(self.serializer_class(contact).data)
+
     def destroy(self, request, pk=None):
         contact = self.get_queryset().filter(pk=pk).first()
         if contact is None:

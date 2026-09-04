@@ -26,7 +26,9 @@ urlpatterns = [
     ),
     path(
         "whatsapp/contacts/<int:pk>",
-        WhatsAppContactViewSet.as_view({"get": "retrieve", "delete": "destroy"}),
+        WhatsAppContactViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
+        ),
         name="whatsapp-contact-detail",
     ),
 ]

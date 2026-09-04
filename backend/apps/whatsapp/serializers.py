@@ -39,20 +39,35 @@ class WhatsAppContactSerializer(serializers.ModelSerializer):
         return None
 
     def validate(self, attrs):
-        owners = [
-            attrs.get("pharmacy"),
-            attrs.get("laboratory"),
-            attrs.get("technician"),
-            attrs.get("reseller"),
+        if self.instance is None:
+            owners = [
+                attrs.get("pharmacy"),
+                attrs.get("laboratory"),
+                attrs.get("technician"),
+                attrs.get("reseller"),
+            ]
+            set_owners = [owner for owner in owners if owner is not None]
+            if len(set_owners) != 1:
+                raise serializers.ValidationError(
+                    "Informe exatamente um dono: pharmacy, laboratory, technician ou reseller."
+                )
+            number = attrs.get("number")
+            if number:
+                attrs["number"] = normalize_phone_digits(number)
+            if not attrs.get("number"):
+                raise serializers.ValidationError(
+                    {"number": "Número de WhatsApp inválido."}
+                )
+            return attrs
+        # edição: dono é imutável (excluir via reatribuição)
+        owner_keys = [
+            key for key in ("pharmacy", "laboratory", "technician", "reseller")
+            if key in attrs
         ]
-        set_owners = [owner for owner in owners if owner is not None]
-        if len(set_owners) != 1:
+        if owner_keys:
             raise serializers.ValidationError(
-                "Informe exatamente um dono: pharmacy, laboratory, technician ou reseller."
+                "O dono do contato não pode ser alterado."
             )
-        number = attrs.get("number")
-        if number:
-            attrs["number"] = normalize_phone_digits(number)
-        if not attrs.get("number"):
-            raise serializers.ValidationError({"number": "Número de WhatsApp inválido."})
+        if "number" in attrs and attrs.get("number"):
+            attrs["number"] = normalize_phone_digits(attrs["number"])
         return attrs

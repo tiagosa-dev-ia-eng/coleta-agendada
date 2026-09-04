@@ -119,3 +119,30 @@ def test_scope_and_delete(make_user):
     removed = farmacia_client.delete(f"{BASE}/{contact.pk}")
     assert removed.status_code == 204
     assert WhatsAppContact.objects.filter(pk=contact.pk).count() == 0
+
+
+def test_contact_partial_update_and_owner_immutable(make_user):
+    lab_user, lab = _lab(make_user)
+    pharmacy, _ = _pharmacy(make_user, lab)
+    contact = WhatsAppContact.objects.create(
+        pharmacy=pharmacy, number="5511988889999", name="Antigo", meta_bsuid="@farmacia"
+    )
+    client = _client(lab_user)
+    patched = client.patch(
+        f"{BASE}/{contact.pk}",
+        {"name": "Novo Nome", "number": "+55 11 97777-1111", "is_main": True},
+        format="json",
+    )
+    assert patched.status_code == 200
+    body = patched.json()
+    assert body["name"] == "Novo Nome"
+    assert body["number"] == "5511977771111"
+    assert body["is_main"] is True
+    # dono imutável
+    blocked = client.patch(f"{BASE}/{contact.pk}", {"pharmacy": None}, format="json")
+    assert blocked.status_code == 400
+    other_lab_admin, lab2 = _lab(make_user, email="lab2-up@exemplo.com")
+    forbidden = _client(other_lab_admin).patch(
+        f"{BASE}/{contact.pk}", {"name": "Fora"}, format="json"
+    )
+    assert forbidden.status_code == 403
