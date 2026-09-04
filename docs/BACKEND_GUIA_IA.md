@@ -246,6 +246,7 @@ backend/
 | 1.1.15 | 04/09/2026 | LGPD MVP (B-04): consentimento/exportação/anonimização do paciente. | §6 |
 | 1.1.22 | 04/09/2026 | Validade do orçamento (B-05): QUOTATION_VALIDITY_DAYS (15); aprovação bloqueada pós-expiração (quote_expired); is_expired no serializer. | §3 |
 | 1.1.23 | 04/09/2026 | Parâmetros de IA oficiais (B-07): documentados (tabela §8) + .env.example. | §8 |
+| 1.1.24 | 04/09/2026 | D-05 receita multifile + D-06/D-07 resultado de exame (URL + página pública por token). | §6 |
 
 ---
 

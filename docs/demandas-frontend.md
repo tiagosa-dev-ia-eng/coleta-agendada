@@ -25,6 +25,8 @@ Fonte da verdade: `AGENTS.md`, `docs/demandas.md`, `docs/BACKEND_GUIA_IA.md` e o
 | F-07 | Contatos WhatsApp por perfil (CRUD + edição) | laboratorio/farmacia/… | — | `/api/v1/whatsapp/contacts…` |
 | F-08 | Indicador de versão da aplicação | global | — | `GET /api/v1/version` (✅ v1.1.14) |
 | F-09 | Botão de localização no simulador já existe; adequar copy do ponto mais próximo (horário/estado) | whatsapp-simulator | — | webhook |
+| F-10 | Upload de receita em múltiplos arquivos (imagens/PDF) no fluxo de solicitação | paciente/laboratorio | — | `POST /requests/{id}/attachments` |
+| F-11 | Resultado de exame: cadastrar URL (laboratório), publicar e exibir página/JSON do resultado | laboratorio/paciente | — | `/requests/{id}/results`, `/results/{id}/publish`, `/results/{token}` (+ `/page` HTML) |
 
 ## 3. Endpoints prontos (resumo para as telas)
 
@@ -64,3 +66,16 @@ POST /exams/{id}/price {price, active} (preço manual do laboratório)
 1. Confirmar definição da D-02 com o PO (conteúdo/fonte/regra).
 2. Implementar F-02 (maior valor operacional) usando os endpoints acima.
 3. Manter o padrão: commit separado por demanda/tarefa + bump de versão (perguntar ao dono do backend sobre bump de frontend, pois VERSION é compartilhado).
+
+## 5. Receita e resultado de exame (D-05…D-07 — endpoints novos)
+
+```
+POST /api/v1/requests/{id}/attachments   # multipart files[] (várias imagens/PDF)
+POST /api/v1/requests/{id}/results       {result_url, note?}   (laboratório)
+POST /api/v1/results/{id}/publish        (laboratório; gera token)
+GET  /api/v1/results/{token}             # JSON público do resultado
+GET  /api/v1/results/{token}/page        # página HTML pública com o resultado
+GET  /api/v1/requests/{id}/results       # listagem (escopo)
+```
+Publicar resultado libera a página; o frontend pode usar o JSON ou linkar a
+página HTML (`page_url`) enviada ao paciente.

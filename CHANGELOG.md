@@ -36,3 +36,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.22 | 04/09/2026 | B-05: validade do orçamento final = 15 dias (QUOTATION_VALIDITY_DAYS, decisão usuário). Aprovação após expiração bloqueada (409 quote_expired); is_expired exposto na leitura. Testes +2. |
 | 1.1.23 | 04/09/2026 | B-07: parâmetros de IA oficiais documentados (tabela no guia §8; .env.example completo com Pagar.me/Z-PRO/agenda/orçamento). |
 | 1.1.24 | 04/09/2026 | Demandas evolutivas: D-05 receita médica — POST /requests/{id}/attachments aceita VÁRIAS imagens/PDFs; D-06/D-07 resultado de exame — ExamResult (URL externa) com registro/publicação por laboratório e página pública (JSON GET /results/{token} + página HTML /results/{token}/page). Testes +4. |
+| 1.1.25 | 04/09/2026 | docs: D-05/D-06/D-07 no registro, guia vivo e doc de frontend (F-10/F-11 + endpoints). |
