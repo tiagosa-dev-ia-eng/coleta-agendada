@@ -37,6 +37,7 @@ class QuotationReadSerializer(serializers.ModelSerializer):
     is_validated = serializers.BooleanField(read_only=True)
     is_sent = serializers.BooleanField(read_only=True)
     is_approved = serializers.BooleanField(read_only=True)
+    is_expired = serializers.BooleanField(read_only=True)
     missing_price_count = serializers.IntegerField(read_only=True)
     validated_by_email = serializers.CharField(
         source="validated_by.email", read_only=True, default=None
@@ -60,6 +61,7 @@ class QuotationReadSerializer(serializers.ModelSerializer):
             "is_validated",
             "is_sent",
             "is_approved",
+            "is_expired",
             "missing_price_count",
             "validated_by_email",
             "validated_at",

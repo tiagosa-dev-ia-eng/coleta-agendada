@@ -177,3 +177,40 @@ def test_no_revision_after_approved(make_user, auth_client):
     blocked = _draft(lab_client, req_id, [{"exam_code": "HEMO"}])
     assert blocked.status_code == 409
     assert "RN-ORC-005" in blocked.json()["error"]["message"]
+
+
+# ---------- B-05: validade do orçamento (15 dias) ----------
+
+def test_expired_quotation_cannot_be_approved(make_user, auth_client):
+    from datetime import timedelta as _td
+
+    from django.utils import timezone as _tz
+
+    lab_user, lab = _lab(make_user)
+    lab_client = auth_client(lab_user)
+    patient, patient_client, req_id = _patient(make_user, auth_client, email="exp@exemplo.com")
+    draft = _draft(lab_client, req_id, [{"exam_code": "HEMO"}]).json()
+    final = lab_client.post(f"/api/v1/quotations/{draft['id']}/validate", format="json").json()
+    lab_client.post(f"/api/v1/quotations/{final['id']}/send", format="json")
+    # envelhece a validação em 16 dias (B-05: validade 15)
+    from apps.quotations.models import Quotation
+
+    Quotation.objects.filter(pk=final["id"]).update(
+        validated_at=_tz.now() - _td(days=16)
+    )
+    blocked = patient_client.post(f"/api/v1/quotations/{final['id']}/approve", format="json")
+    assert blocked.status_code == 409
+    assert blocked.json()["error"]["code"] == "quote_expired"
+    assert "15 dias" in blocked.json()["error"]["message"]
+    # recusa/envio não são bloqueados pela expiração (apenas aprovação)
+    assert lab_client.get(f"/api/v1/quotations/{final['id']}").json()["is_expired"] is True
+
+
+def test_fresh_quotation_is_not_expired(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    lab_client = auth_client(lab_user)
+    _, _, req_id = _patient(make_user, auth_client, email="fresh@exemplo.com")
+    draft = _draft(lab_client, req_id, [{"exam_code": "HEMO"}]).json()
+    final = lab_client.post(f"/api/v1/quotations/{draft['id']}/validate", format="json").json()
+    body = lab_client.get(f"/api/v1/quotations/{final['id']}").json()
+    assert body["is_expired"] is False

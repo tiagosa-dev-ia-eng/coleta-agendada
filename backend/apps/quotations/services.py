@@ -24,6 +24,13 @@ class QuoteNotValidated(QuotationError):
     default_detail = "O orçamento final precisa de validação humana antes do envio."
 
 
+class QuoteExpired(QuotationError):
+    """B-05: orçamento final expirado (validade em dias)."""
+
+    default_code = "quote_expired"
+    default_detail = "O orçamento expirou (validade). Solicite um novo orçamento ao laboratório."
+
+
 class MissingPrices(QuotationError):
     status_code = 422
     default_code = "quote_items_missing_price"
@@ -217,6 +224,16 @@ class QuotationService:
             raise QuotationError(detail="Orçamento ainda não foi enviado para aprovação.")
         if final_quote.is_approved:
             raise QuotationError(detail="Orçamento já aprovado.")
+        if final_quote.is_expired:
+            from django.conf import settings as _st
+
+            raise QuoteExpired(
+                detail=(
+                    "Orçamento expirado (validade de "
+                    f"{getattr(_st, 'QUOTATION_VALIDITY_DAYS', 15)} dias). "
+                    "Solicite um novo orçamento ao laboratório."
+                )
+            )
         final_quote.approved_by = approved_by
         final_quote.approved_at = timezone.now()
         final_quote.save(update_fields=["approved_by", "approved_at", "updated_at"])

@@ -115,6 +115,9 @@ MAX_MEDICAL_UPLOAD_BYTES = int(os.getenv("MAX_MEDICAL_UPLOAD_MB", "10")) * 1024 
 
 # Pagamentos (doc 10/13): gateway via adapter (R-006) — MVP usa fake (gate G-02)
 PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fake")
+
+# Validade do orçamento final em dias (B-05/G-08 — decisão usuário 04/09: 15 dias)
+QUOTATION_VALIDITY_DAYS = int(os.getenv("QUOTATION_VALIDITY_DAYS", "15"))
 PAYMENT_WEBHOOK_SECRET = os.getenv("PAYMENT_WEBHOOK_SECRET", "")
 
 # IA (doc 08): DeepSeek via env — sem chave cai no mock (homologação interna)

@@ -231,6 +231,7 @@ backend/
 | 1.1.13 | 04/09/2026 | Gateway Pagar.me (B-01): PagarMeGateway Core v5 via env (PAYMENT_GATEWAY=pagarme; HTTP Basic secret). | §6 |
 | 1.1.14 | 04/09/2026 | Provedor WhatsApp Z-PRO (B-03): gateway outbound (env ZPRO_*) com hook pós-resposta. | §5 |
 | 1.1.15 | 04/09/2026 | LGPD MVP (B-04): consentimento/exportação/anonimização do paciente. | §6 |
+| 1.1.22 | 04/09/2026 | Validade do orçamento (B-05): QUOTATION_VALIDITY_DAYS (15); aprovação bloqueada pós-expiração (quote_expired); is_expired no serializer. | §3 |
 
 ---
 
