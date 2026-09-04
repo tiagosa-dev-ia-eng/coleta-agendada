@@ -23,6 +23,9 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 
+# Ferramentas locais (ex.: cloudflared)
+.tools/
+
 # Caches locais (pnpm/ferramentas — XDG dentro do workspace)
 .cache/
 .data/
