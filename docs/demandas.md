@@ -47,7 +47,7 @@ Validações de regra de negócio: **sempre no backend** (AGENTS.md §8).
 | B-04 | LGPD MVP (v1.1.15): consentimento + exportar + anonimização; FALTA decisão de retenção/política de guarda e purga | — | G-06 |
 | B-05 | Validade/invalidação do orçamento pós-edição; versão aprovada | **RESOLVIDA** — RN-ORC-004/005 (v1.1.12) + validade de 15 dias (v1.1.22, decisão usuário) | G-08 |
 | B-06 | Reagendamento/cancelamento de agendamento | Política | G-09 |
-| B-07 | Parâmetros de IA (modelo/prompt/temperatura/confiança/fallback) | Config | G-10 |
+| B-07 | Parâmetros de IA — **RESOLVIDA (v1.1.23): env oficiais documentados** (DEEPSEEK_MODEL/BASE_URL/TEMPERATURE, AI_MIN_CONFIDENCE, DEEPSEEK_MOCK) | — | G-10 |
 | B-08 | Origem oficial de preços; preço por região/parceiro | Origem/regra | G-01 evolução |
 
 ## 4. Frontend — documento dedicado

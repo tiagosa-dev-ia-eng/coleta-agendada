@@ -34,3 +34,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.20 | 04/09/2026 | Merge das linhas backend (1.1.13–1.1.16: Pagar.me, Z-PRO, LGPD, docs) e frontend (1.1.15–1.1.19: F-02/F-03/F-04/F-05/F-06, UX PWA). |
 | 1.1.21 | 04/09/2026 | chore: ajustes de estilo (ruff) pós-merge das linhas backend/frontend. |
 | 1.1.22 | 04/09/2026 | B-05: validade do orçamento final = 15 dias (QUOTATION_VALIDITY_DAYS, decisão usuário). Aprovação após expiração bloqueada (409 quote_expired); is_expired exposto na leitura. Testes +2. |
+| 1.1.23 | 04/09/2026 | B-07: parâmetros de IA oficiais documentados (tabela no guia §8; .env.example completo com Pagar.me/Z-PRO/agenda/orçamento). |
