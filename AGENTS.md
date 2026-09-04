@@ -86,6 +86,7 @@ coleta-agendada/
 │   ├── apps/
 │   │   ├── accounts/         # User, Role, Permission, auth JWT
 │   │   ├── organizations/    # Laboratory, Reseller, Pharmacy
+│   │   ├── collection_points/ # CollectionPoint + janelas + técnicos (D-03)
 │   │   ├── patients/
 │   │   ├── technicians/
 │   │   ├── requests/         # CollectionRequest + estados + histórico
