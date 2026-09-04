@@ -78,4 +78,5 @@ class AppointmentReadSerializer(serializers.ModelSerializer):
 
     def get_patient(self, obj):
         p = obj.request.patient
-        return {"id": p.pk, "name": p.user.full_name, "email": p.user.email}
+        phone = getattr(p, "phone", None) or getattr(p.user, "phone", "")
+        return {"id": p.pk, "name": p.user.full_name, "email": p.user.email, "phone": phone}

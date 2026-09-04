@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Shell from "@/components/Shell";
+import { CalendarView } from "@/components/CalendarView";
 import {
   Button,
   Card,
@@ -63,6 +64,7 @@ export default function Tecnico() {
   const [confirmAppt, setConfirmAppt] = useState<Appt | null>(null);
   const [confirmClosePoint, setConfirmClosePoint] = useState<CollectionPoint | null>(null);
   const [operating, setOperating] = useState(false);
+  const [activeAgendaTab, setActiveAgendaTab] = useState<"cards" | "calendar">("cards");
 
   const load = useCallback(async () => {
     try {
@@ -201,8 +203,51 @@ export default function Tecnico() {
         </div>
       )}
 
-      {/* Agenda de Coletas com Ergonomia e Touch Targets Acessíveis */}
-      <Card title="Minha agenda de coletas do dia" className="mb-6">
+      {/* Agenda de Coletas e Calendário Multi-formato */}
+      <div className="mb-6 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <h2 className="text-base font-bold text-zinc-900">
+            Minha agenda de coletas (Turno e Escala)
+          </h2>
+          <div className="flex items-center rounded-xl bg-zinc-100 p-1 text-xs font-medium self-start sm:self-auto">
+            <button
+              onClick={() => setActiveAgendaTab("cards")}
+              className={`rounded-lg px-3 py-1.5 transition-all ${
+                activeAgendaTab === "cards"
+                  ? "bg-white text-zinc-900 font-bold shadow-xs"
+                  : "text-zinc-600 hover:text-zinc-900"
+              }`}
+            >
+              Cards de Campo
+            </button>
+            <button
+              onClick={() => setActiveAgendaTab("calendar")}
+              className={`rounded-lg px-3 py-1.5 transition-all ${
+                activeAgendaTab === "calendar"
+                  ? "bg-white text-zinc-900 font-bold shadow-xs"
+                  : "text-zinc-600 hover:text-zinc-900"
+              }`}
+            >
+              📅 Calendário / WhatsApp
+            </button>
+          </div>
+        </div>
+
+        {activeAgendaTab === "calendar" ? (
+          <CalendarView
+            appointments={appts.map((a) => ({
+              id: a.id,
+              code: a.code,
+              status: a.status,
+              scheduled_at: a.scheduled_at,
+              patient_name: a.patient?.name ?? "Paciente",
+              patient_phone: a.patient?.phone,
+              location: a.location,
+              pharmacy_name: a.pharmacy_name,
+            }))}
+          />
+        ) : (
+          <Card title="Cards de Coletas e Ações de Campo">
         {appts.length === 0 && <Empty text="Nenhuma coleta atribuída para você no momento." />}
         <div className="space-y-3">
           {appts.map((a) => {
@@ -293,6 +338,8 @@ export default function Tecnico() {
           })}
         </div>
       </Card>
+        )}
+      </div>
 
       {/* Comissões */}
       <Card title="Minhas comissões operacionais">

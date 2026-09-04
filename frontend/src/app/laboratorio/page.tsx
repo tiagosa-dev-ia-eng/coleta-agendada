@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Shell from "@/components/Shell";
+import { CalendarView } from "@/components/CalendarView";
 import { Button, Card, ConfirmModal, Empty, Notice, StatusBadge, fmtDate, money } from "@/components/ui";
 import { authedFetch } from "@/lib/auth";
 
@@ -138,6 +139,15 @@ export default function Laboratorio() {
 
   // New point form
   const [showNewPointModal, setShowNewPointModal] = useState(false);
+
+  // F-04: CRUD de Exames (Criar / Editar / Desativar)
+  const [showExamModal, setShowExamModal] = useState(false);
+  const [examModalMode, setExamModalMode] = useState<"create" | "edit">("create");
+  const [editingExamId, setEditingExamId] = useState<number | null>(null);
+  const [examCode, setExamCode] = useState("");
+  const [examName, setExamName] = useState("");
+  const [examSearch, setExamSearch] = useState("");
+  const [confirmDeactivateExam, setConfirmDeactivateExam] = useState<Exam | null>(null);
   const [newKind, setNewKind] = useState<"laboratory" | "pharmacy">("laboratory");
   const [newPharmacyId, setNewPharmacyId] = useState<string>("");
   const [newName, setNewName] = useState("");
@@ -246,6 +256,77 @@ export default function Laboratorio() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  // F-04: Exames Handlers
+  async function handleSaveExam() {
+    if (!examName.trim()) {
+      setNotice("O nome do exame é obrigatório.");
+      return;
+    }
+    if (examModalMode === "create" && !examCode.trim()) {
+      setNotice("O código do exame é obrigatório.");
+      return;
+    }
+
+    setBusyId(editingExamId ?? 999999);
+    try {
+      if (examModalMode === "create") {
+        await authedFetch("/api/v1/exams", {
+          method: "POST",
+          body: JSON.stringify({ code: examCode.trim().toUpperCase(), name: examName.trim() }),
+        });
+        setNotice("Novo exame cadastrado no catálogo com sucesso!");
+      } else if (editingExamId) {
+        await authedFetch(`/api/v1/exams/${editingExamId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ name: examName.trim() }),
+        });
+        setNotice("Nome do exame atualizado com sucesso!");
+      }
+      setShowExamModal(false);
+      setExamCode("");
+      setExamName("");
+      setEditingExamId(null);
+      await loadAll();
+    } catch (ex) {
+      setNotice("Erro no exame: " + (ex instanceof Error ? ex.message : ""));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleDeactivateExam() {
+    if (!confirmDeactivateExam) return;
+    setBusyId(confirmDeactivateExam.id);
+    try {
+      await authedFetch(`/api/v1/exams/${confirmDeactivateExam.id}`, {
+        method: "DELETE",
+      });
+      setNotice(`Exame ${confirmDeactivateExam.code} desativado com sucesso (histórico preservado).`);
+      setConfirmDeactivateExam(null);
+      await loadAll();
+    } catch (ex) {
+      setNotice("Erro ao desativar exame: " + (ex instanceof Error ? ex.message : ""));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function openEditExam(e: Exam) {
+    setExamModalMode("edit");
+    setEditingExamId(e.id);
+    setExamCode(e.code);
+    setExamName(e.name);
+    setShowExamModal(true);
+  }
+
+  function openCreateExam() {
+    setExamModalMode("create");
+    setEditingExamId(null);
+    setExamCode("");
+    setExamName("");
+    setShowExamModal(true);
   }
 
   // F-02 Actions
@@ -833,43 +914,110 @@ export default function Laboratorio() {
         onCancel={() => setPaymentModalData(null)}
       />
 
-      {/* Catálogo de Exames & Agenda */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Catálogo de exames e preços (por laboratório)">
-          {exams.length === 0 && <Empty text="Nenhum exame no catálogo." />}
-          <div className="space-y-2">
-            {exams.map((e) => (
-              <div key={e.id} className="flex items-center gap-2 text-sm">
-                <b className="w-14 text-xs">{e.code}</b>
-                <span className="flex-1 text-xs text-zinc-600">{e.name}</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={prices[e.id] ?? e.price?.price ?? ""}
-                  onChange={(ev) => setPrices({ ...prices, [e.id]: ev.target.value })}
-                  placeholder="R$"
-                  className="w-24 rounded border border-zinc-300 px-2 py-1 text-right text-xs outline-none focus:border-emerald-500"
-                />
-                <Button kind="ghost" onClick={() => savePrice(e.id)} disabled={busyId === e.id}>Salvar</Button>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card title="Agenda de coletas">
-          {appts.length === 0 && <Empty text="Nenhum agendamento." />}
-          <div className="space-y-2">
-            {appts.map((a) => (
-              <div key={a.id} className="flex items-center gap-2 rounded-lg bg-zinc-50 p-2 text-xs">
-                <span>{a.code}</span>
-                <StatusBadge status={a.status} />
-                <span className="text-zinc-600">{fmtDate(a.scheduled_at)}</span>
-                <span className="text-zinc-500">{a.pharmacy_name || a.technician_name || a.location || ""}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+      {/* Demanda Evolutiva: Calendário Interativo Multi-formato (Semanal, Diário e Mensagem WhatsApp) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-zinc-900">
+            📅 Calendário Integrado de Coletas (Multi-formato)
+          </h2>
+          <span className="text-xs text-zinc-500">{appts.length} coleta(s) registradas</span>
+        </div>
+        <CalendarView
+          appointments={appts.map((a) => ({
+            id: a.id,
+            code: a.code,
+            status: a.status,
+            scheduled_at: a.scheduled_at,
+            patient_name: a.patient?.name ?? a.patient?.email,
+            location: a.location,
+            pharmacy_name: a.pharmacy_name,
+            technician_name: a.technician_name,
+          }))}
+        />
       </div>
+
+      {/* F-04: Gestão do Catálogo de Exames (CRUD + Preços por Laboratório) */}
+      <Card
+        title="Catálogo Geral de Exames e Tabela de Preços (F-04)"
+        actions={
+          <div className="flex gap-2">
+            <Button kind="ghost" onClick={() => void loadAll()}>Atualizar</Button>
+            <Button kind="primary" onClick={openCreateExam}>+ Novo Exame</Button>
+          </div>
+        }
+      >
+        <div className="mb-3">
+          <input
+            type="text"
+            placeholder="🔍 Buscar exame por código ou nome..."
+            value={examSearch}
+            onChange={(e) => setExamSearch(e.target.value)}
+            className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs outline-none focus:border-emerald-500"
+          />
+        </div>
+
+        {exams.length === 0 ? (
+          <Empty text="Nenhum exame cadastrado no catálogo." />
+        ) : (
+          <div className="space-y-2">
+            {exams
+              .filter(
+                (e) =>
+                  e.code.toLowerCase().includes(examSearch.toLowerCase()) ||
+                  e.name.toLowerCase().includes(examSearch.toLowerCase())
+              )
+              .map((e) => (
+                <div
+                  key={e.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white p-3 hover:border-zinc-300 transition-all text-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-lg bg-zinc-100 px-2 py-1 font-mono text-xs font-bold text-zinc-800">
+                      {e.code}
+                    </span>
+                    <div>
+                      <h4 className="font-semibold text-zinc-900 text-xs sm:text-sm">{e.name}</h4>
+                      <p className="text-[11px] text-zinc-500">
+                        Preço base definido: {e.price ? money(e.price.price) : "Ainda não precificado"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-zinc-500">R$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={prices[e.id] ?? e.price?.price ?? ""}
+                        onChange={(ev) => setPrices({ ...prices, [e.id]: ev.target.value })}
+                        placeholder="0,00"
+                        className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-right text-xs outline-none focus:border-emerald-500"
+                      />
+                      <Button kind="ghost" onClick={() => savePrice(e.id)} disabled={busyId === e.id}>
+                        Salvar
+                      </Button>
+                    </div>
+
+                    <button
+                      onClick={() => openEditExam(e)}
+                      className="rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
+                    >
+                      ✏️ Editar
+                    </button>
+
+                    <button
+                      onClick={() => setConfirmDeactivateExam(e)}
+                      className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+      </Card>
 
       {/* Lançamentos de Comissão */}
       <Card title="Lançamentos de comissão">
@@ -885,6 +1033,62 @@ export default function Laboratorio() {
           ))}
         </div>
       </Card>
+      {/* Modal de Criação / Edição de Exame (F-04) */}
+      {showExamModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
+            <h3 className="text-lg font-bold text-zinc-900">
+              {examModalMode === "create" ? "Cadastrar Novo Exame" : `Editar Exame: ${examCode}`}
+            </h3>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Código do Exame (Ex: HEMO, GLIC)</label>
+                <input
+                  type="text"
+                  value={examCode}
+                  disabled={examModalMode === "edit"}
+                  onChange={(e) => setExamCode(e.target.value.toUpperCase())}
+                  placeholder="HEMO"
+                  className="w-full rounded-lg border border-zinc-300 p-2 text-xs font-mono uppercase disabled:bg-zinc-100"
+                />
+                {examModalMode === "edit" && (
+                  <p className="mt-1 text-[11px] text-zinc-400">O código do exame é imutável após a criação.</p>
+                )}
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Nome do Exame</label>
+                <input
+                  type="text"
+                  value={examName}
+                  onChange={(e) => setExamName(e.target.value)}
+                  placeholder="Hemograma Completo com Plaquetas"
+                  className="w-full rounded-lg border border-zinc-300 p-2 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+              <Button kind="ghost" onClick={() => setShowExamModal(false)}>Cancelar</Button>
+              <Button kind="primary" onClick={handleSaveExam} disabled={busyId !== null}>
+                {examModalMode === "create" ? "Cadastrar Exame" : "Salvar Alterações"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmação de Desativação de Exame (Soft Delete) */}
+      <ConfirmModal
+        isOpen={Boolean(confirmDeactivateExam)}
+        title={`Desativar Exame ${confirmDeactivateExam?.code}`}
+        description={`Tem certeza que deseja desativar o exame "${confirmDeactivateExam?.name}"? O exame não aparecerá mais para novos orçamentos, mas todo o histórico e orçamentos anteriores serão preservados integralmente.`}
+        confirmText="Sim, Desativar Exame"
+        kind="danger"
+        onConfirm={() => void handleDeactivateExam()}
+        onCancel={() => setConfirmDeactivateExam(null)}
+      />
     </Shell>
   );
 }

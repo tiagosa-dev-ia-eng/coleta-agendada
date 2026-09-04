@@ -3,6 +3,7 @@
 | 1.1.15 | feat(pwa-ui): manifesto PWA, viewport safe-area, alvos de toque 48px e modal de confirmação acessível |
 | 1.1.16 | feat(tecnico): gestão de ponto de coleta D-03 no /tecnico (abrir/fechar turno, janelas, atalhos GPS/WhatsApp) (F-02) |
 | 1.1.17 | feat(laboratorio): gestão completa de pontos de coleta (F-02) e cancelamento/estorno de pagamentos (F-03) |
+| 1.1.18 | feat(calendar-f04): componente CalendarView (semanal/diário/mensagem WhatsApp) e CRUD de exames F-04 |
 # Demandas do alinhamento — organizadas por área
 
 Registro vivo das demandas do cliente (origem: alinhamento; `docs/anotacao.txt` não é versionado).
