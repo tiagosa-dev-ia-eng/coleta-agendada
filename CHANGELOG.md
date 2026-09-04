@@ -14,3 +14,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.4 | 04/09/2026 | Contatos WhatsApp: PATCH /api/v1/whatsapp/contacts/{id} (nome/número/bsuid/principal; dono imutável; escopo por perfil) + teste. |
 | 1.1.5 | 04/09/2026 | Revenda: GET e PATCH /api/v1/resellers/{id} (status; laboratório) + testes. |
 | 1.1.6 | 04/09/2026 | docs: guia vivo do backend — endpoints novos de cobertura (exames/pagamentos/auditoria/contatos/revenda) no §6 e histórico. |
+| 1.1.7 | 04/09/2026 | Chatbot: economia de tokens — DEEPSEEK_MOCK=1 força mock mesmo com chave (validar respostas sem custo); consulta com protocolo CA- resolvida sem IA (determinística); testes (2). |

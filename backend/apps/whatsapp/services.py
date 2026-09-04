@@ -69,7 +69,12 @@ class WhatsAppService:
         ai_error = False
         model = settings.DEEPSEEK_MODEL
         raw = None
-        if settings.DEEPSEEK_API_KEY:
+        # DEEPSEEK_MOCK: validação/respostas SEM gasto de token (mesmo com chave)
+        if settings.DEEPSEEK_MOCK or not settings.DEEPSEEK_API_KEY:
+            used_mock = True
+            model = "mock"
+            raw = mock_analyze(text)
+        else:
             try:
                 raw = call_deepseek(text, catalog_hint=catalog_hint())
             except AICallError:
@@ -77,10 +82,6 @@ class WhatsAppService:
                 ai_error = True
                 raw = mock_analyze(text)
                 model = "mock"
-        else:
-            used_mock = True
-            model = "mock"
-            raw = mock_analyze(text)
         try:
             return normalize_extraction(raw), model, used_mock, ai_error
         except ExtractionError:
@@ -181,6 +182,16 @@ class WhatsAppService:
             ai_error = False
         elif WhatsAppService._looks_like_nearest_pharmacy_ask(text):
             extraction = {"intent": "nearest_pharmacy", "confidence": 1.0, "location": None}
+            model = ""
+            used_mock = False
+            ai_error = False
+        elif PROTOCOL_RE.search(text):
+            # protocolo presente: consulta de andamento é determinística (sem IA)
+            extraction = {
+                "intent": "check_status",
+                "confidence": 1.0,
+                "protocol": PROTOCOL_RE.search(text).group(0).upper(),
+            }
             model = ""
             used_mock = False
             ai_error = False

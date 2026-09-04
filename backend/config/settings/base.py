@@ -118,6 +118,9 @@ PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fake")
 PAYMENT_WEBHOOK_SECRET = os.getenv("PAYMENT_WEBHOOK_SECRET", "")
 
 # IA (doc 08): DeepSeek via env — sem chave cai no mock (homologação interna)
+# DEEPSEEK_MOCK=1 força o mock MESMO com chave configurada (validar respostas
+# do chatbot e testes sem gastar tokens — decisão usuário 04/09/2026).
+DEEPSEEK_MOCK = os.getenv("DEEPSEEK_MOCK", "").lower() in {"1", "true", "yes", "on"}
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")

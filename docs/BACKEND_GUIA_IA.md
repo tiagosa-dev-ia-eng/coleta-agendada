@@ -132,7 +132,10 @@ Caminho: `POST /api/v1/webhooks/whatsapp` → `whatsapp.views.InboundWhatsAppVie
 4. Decisão do caminho:
    - **Localização presente** (payload `location: {latitude, longitude}` ou texto "lat, lon") → extração determinística `intent=nearest_pharmacy` **sem LLM** (resolve via `nearest_collection_points` — CollectionPoint);
    - pergunta por local de coleta sem localização (heurística de termos) → pede compartilhamento;
-   - senão → `DeepSeek` (ou `mock_analyze` sem chave) + `normalize_extraction` (schema) → `_act`.
+   - mensagem com **protocolo CA-** → `check_status` determinístico (sem IA);
+   - senão → `DeepSeek` (ou `mock_analyze` sem chave; `DEEPSEEK_MOCK=1` força
+     mock MESMO com chave — validar respostas sem gastar tokens) +
+     `normalize_extraction` (schema) → `_act`.
 5. Responde com mensagem outbound e audita (`whatsapp.message_processed`).
 
 Intenções tratadas em `_act`: `create_collection_request`, `check_status`,
