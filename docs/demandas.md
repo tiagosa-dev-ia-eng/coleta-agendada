@@ -12,6 +12,11 @@ Cada demanda é implementada em **commit separado** que documenta a demanda aten
 ## D-01 — Mandar localização para farmácia/laboratório (local de coleta) mais próxima
 
 Texto original: *"Mandar localização para farmacia/laboratior (local de coleta) mas proxima"*.
+Definição refinada (usuário, 04/09/2026): o paciente manda a localização e o
+chatbot devolve o **local de coleta mais próximo** — no domínio atual, o
+"local de coleta" é a **farmácia/ponto de coleta** da rede (doc 06). Unidade
+do laboratório como ponto de coleta = evolução futura (exigiria coordenadas
+em "Laboratory").
 
 Contexto no sistema atual:
 
@@ -22,10 +27,10 @@ Contexto no sistema atual:
 
 ### Perguntas de domínio (respondidas pelo usuário — 04/09/2026)
 
-- **Fluxo:** o paciente manda a localização e **o chatbot devolve a farmácia
-  mais próxima** (resposta direta no chat; interação pelo canal WhatsApp + IA /
-  simulador do M8).
-- **Cálculo de "mais próxima":** farmácias **ativas da rede do laboratório do
+- **Fluxo:** o paciente manda a localização e **o chatbot devolve o local de
+  coleta (farmácia/ponto de coleta) mais próximo** — resposta direta no chat;
+  interação pelo canal WhatsApp + IA / simulador do M8.
+- **Cálculo de "mais próximo":** farmácias **ativas da rede do laboratório do
   canal** ("conv.laboratory") com latitude/longitude cadastradas; distância
   Haversine (km). Cadastro das coordenadas via API/admin/"Pharmacy.latitude"
   e "Pharmacy.longitude" (novos campos). CEP como fallback/geocodificação:

@@ -24,19 +24,26 @@ from apps.whatsapp.models import Direction, WhatsAppConversation, WhatsAppMessag
 
 logger = logging.getLogger(__name__)
 
-# Demanda D-01: texto do paciente pedindo a farmácia mais próxima SEM
+# Demanda D-01: texto do paciente pedindo o local de coleta mais próximo SEM
 # localização ainda — o chatbot deve pedir para compartilhar a localização.
-NEAREST_PHARMACY_MARKERS = (
+# O "local de coleta" do domínio é hoje a farmácia/ponto de coleta da rede
+# (doc 06; Pharmacy é documentada como "Farmácia/ponto de coleta").
+COLLECTION_TERM_MARKERS = (
+    "farm",
+    "local de coleta",
+    "local de colet",
+    "ponto de coleta",
+    "ponto de colet",
+)
+PROXIMITY_MARKERS = (
     "próxim",
     "proxim",
     "mais próxima",
     "mais proxima",
     "mais perto",
     "perto",
-    "localiza",
     "onde fica",
-    "onde e",
-    "qual farm",
+    "localiza",
 )
 
 PROTOCOL_RE = re.compile(r"CA-\d{8}-[A-F0-9]{6}", re.IGNORECASE)
@@ -105,11 +112,16 @@ class WhatsAppService:
 
     @staticmethod
     def _looks_like_nearest_pharmacy_ask(text):
-        """Paciente pergunta pela farmácia mais próxima sem enviar localização."""
+        """Paciente pergunta pelo local de coleta mais próximo sem enviar localização.
+
+        Exige um termo de ponto de coleta (farmácia/ponto/local de coleta) E um
+        marcador de proximidade — evita capturar pedidos comuns de agendamento
+        ("quero coleta na farmácia", "fazer coleta no ponto X").
+        """
         lowered = (text or "").lower()
-        if "farm" not in lowered:
-            return False
-        return any(marker in lowered for marker in NEAREST_PHARMACY_MARKERS)
+        has_term = any(marker in lowered for marker in COLLECTION_TERM_MARKERS)
+        has_proximity = any(marker in lowered for marker in PROXIMITY_MARKERS)
+        return has_term and has_proximity
 
     @staticmethod
     def _fmt_km(distance_km):
@@ -339,18 +351,20 @@ class WhatsAppService:
         )
     @staticmethod
     def _nearest_pharmacy(extraction, conv):
-        """D-01: devolve a farmácia mais próxima da localização do paciente.
+        """D-01: devolve o local de coleta mais próximo da localização.
 
-        Busca na rede do laboratório do canal (conv.laboratory) apenas
-        farmácias ativas com coordenadas cadastradas. Sem localização válida,
-        pede o compartilhamento; sem farmácia georreferenciada, encaminha a
-        humano (não inventa ponto de coleta — regras 1/10 do AGENTS.md).
+        O local de coleta do domínio é hoje a farmácia/ponto de coleta da rede
+        do laboratório do canal (conv.laboratory), ativa e com coordenadas
+        cadastradas. Sem localização válida, pede o compartilhamento; sem ponto
+        georreferenciado, encaminha a humano (não inventa ponto de coleta —
+        regras 1/10 do AGENTS.md). Unidade do laboratório como ponto de coleta:
+        evolução futura (exigiria coordenadas em Laboratory).
         """
         location = extraction.get("location") or {}
         lat, lon = location.get("latitude"), location.get("longitude")
         if lat is None or lon is None or not valid_coordinates(lat, lon):
             return (
-                "Claro! Para te dizer a farmácia mais próxima da rede, "
+                "Claro! Para te dizer o local de coleta mais próximo da rede, "
                 "compartilhe sua localização atual pelo chat "
                 "(ícone 📎 → Localização)."
             )
@@ -367,16 +381,17 @@ class WhatsAppService:
             conv.status = "human"
             conv.save(update_fields=["status"])
             return (
-                f"Ainda não há farmácias da rede {lab.name} com localização "
-                "cadastrada neste momento. Um atendente humano vai te indicar "
-                "o ponto de coleta mais próximo em instantes."
+                f"Ainda não há pontos de coleta da rede {lab.name} com "
+                "localização cadastrada neste momento. Um atendente humano vai "
+                "te indicar o local de coleta mais próximo em instantes."
             )
         distance_km, pharmacy = ranked[0]
         parts = [part for part in (pharmacy.address, pharmacy.city, pharmacy.state) if part]
         where = (" — " + ", ".join(parts)) if parts else ""
         return (
-            f"A farmácia mais próxima da sua localização é a {pharmacy.name}"
-            f"{where} (a cerca de {WhatsAppService._fmt_km(distance_km)} km). "
-            "Posso agendar a coleta nesse ponto para você? É só me dizer qual "
-            "exame e em qual período prefere."
+            f"O local de coleta mais próximo da sua localização é a farmácia "
+            f"{pharmacy.name}{where} (a cerca de "
+            f"{WhatsAppService._fmt_km(distance_km)} km). Posso agendar a "
+            "coleta nesse ponto para você? É só me dizer qual exame e em qual "
+            "período prefere."
         )

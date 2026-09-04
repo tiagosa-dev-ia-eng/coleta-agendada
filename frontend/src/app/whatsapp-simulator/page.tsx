@@ -17,7 +17,7 @@ const SUGGESTIONS = [
   "Quero agendar coleta de hemograma amanhã de manhã",
   "Quero coleta de glicemia e TSH em casa hoje à tarde",
   "Qual o status da minha solicitação?",
-  "Qual a farmácia mais próxima da minha localização?",
+  "Qual o local de coleta mais próximo da minha localização?",
   "Oi, tudo bem?",
 ];
 
@@ -255,7 +255,7 @@ export default function WhatsappSimulator() {
       </div>
       <div className="border-t border-zinc-800 px-4 py-2">
         <p className="text-[11px] uppercase tracking-wide text-zinc-500">
-          📍 Localização (D-01 — farmácia mais próxima)
+          📍 Localização (D-01 — local de coleta mais próximo)
         </p>
         <div className="mt-1 flex items-center gap-2">
           <input

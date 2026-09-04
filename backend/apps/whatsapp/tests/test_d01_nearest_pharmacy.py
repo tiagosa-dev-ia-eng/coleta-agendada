@@ -127,6 +127,7 @@ def test_structured_location_returns_nearest_pharmacy(make_user):
     assert resp.status_code == 200
     conv = WhatsAppConversation.objects.get(phone=PHONE)
     reply = _last_outbound(conv)
+    assert "local de coleta" in reply.content
     assert "Farmácia Central" in reply.content
     assert "km" in reply.content
     assert "Farmácia Longe" not in reply.content
@@ -148,7 +149,7 @@ def test_text_coordinates_returns_nearest_pharmacy(make_user):
 
 def test_nearest_ask_without_location_prompts_share(make_user):
     env = _env(make_user)
-    resp = _send(env["patient"], "Qual a farmácia mais próxima da minha localização?")
+    resp = _send(env["patient"], "Qual o local de coleta mais próximo da minha localização?")
     assert resp.status_code == 200
     conv = WhatsAppConversation.objects.get(phone=PHONE)
     reply = _last_outbound(conv).content
