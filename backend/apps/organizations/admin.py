@@ -5,7 +5,7 @@ from apps.organizations.models import Laboratory, Pharmacy, Reseller
 
 @admin.register(Laboratory)
 class LaboratoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "document", "owner", "city", "status", "latitude", "longitude")
+    list_display = ("name", "document", "owner", "status")
     search_fields = ("name", "document")
 
 
@@ -17,6 +17,6 @@ class ResellerAdmin(admin.ModelAdmin):
 
 @admin.register(Pharmacy)
 class PharmacyAdmin(admin.ModelAdmin):
-    list_display = ("name", "laboratory", "reseller", "city", "status", "latitude", "longitude")
+    list_display = ("name", "laboratory", "reseller", "city", "status")
     list_filter = ("laboratory", "status")
     search_fields = ("name", "document")

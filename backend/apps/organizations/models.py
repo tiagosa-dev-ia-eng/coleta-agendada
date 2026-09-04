@@ -29,28 +29,6 @@ class Laboratory(models.Model):
         related_name="owned_laboratory",
         verbose_name="usuário administrador",
     )
-    # Localização da unidade — o laboratório também é um local de coleta (D-01:
-    # ponto de coleta = farmácia OU laboratório, decisão do usuário 04/09/2026).
-    address = models.CharField(max_length=255, blank=True, verbose_name="endereço")
-    city = models.CharField(max_length=80, blank=True, verbose_name="cidade")
-    state = models.CharField(max_length=2, blank=True, verbose_name="UF")
-    zip_code = models.CharField(max_length=10, blank=True, verbose_name="CEP")
-    latitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        null=True,
-        blank=True,
-        verbose_name="latitude",
-        help_text="Coordenada para cálculo de proximidade (D-01).",
-    )
-    longitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        null=True,
-        blank=True,
-        verbose_name="longitude",
-        help_text="Coordenada para cálculo de proximidade (D-01).",
-    )
     status = models.CharField(
         max_length=16, choices=STATUS_CHOICES, default=STATUS_ACTIVE, verbose_name="status"
     )
@@ -122,22 +100,6 @@ class Pharmacy(models.Model):
     city = models.CharField(max_length=80, blank=True, verbose_name="cidade")
     state = models.CharField(max_length=2, blank=True, verbose_name="UF")
     zip_code = models.CharField(max_length=10, blank=True, verbose_name="CEP")
-    latitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        null=True,
-        blank=True,
-        verbose_name="latitude",
-        help_text="Coordenada para cálculo de proximidade (D-01).",
-    )
-    longitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        null=True,
-        blank=True,
-        verbose_name="longitude",
-        help_text="Coordenada para cálculo de proximidade (D-01).",
-    )
     status = models.CharField(
         max_length=16, choices=STATUS_CHOICES, default=STATUS_ACTIVE, verbose_name="status"
     )

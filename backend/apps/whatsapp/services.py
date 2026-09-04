@@ -15,7 +15,8 @@ from apps.ai.client import AICallError, call_deepseek
 from apps.ai.mock import catalog_hint, mock_analyze
 from apps.ai.schema import ExtractionError, normalize_extraction
 from apps.audit.models import record as audit_record
-from apps.organizations.geolocation import (
+from apps.collection_points import services as point_services
+from apps.collection_points.geolocation import (
     nearest_collection_points,
     parse_coordinates,
     valid_coordinates,
@@ -393,9 +394,12 @@ class WhatsAppService:
             subject = f"a farmácia {point.name}"
         parts = [part for part in (point.address, point.city, point.state) if part]
         where = (" — " + ", ".join(parts)) if parts else ""
+        schedule = point_services.schedule_summary(point)
+        state = point_services.open_state_label(point)
         return (
             f"O local de coleta mais próximo da sua localização é {subject}"
             f"{where} (a cerca de {WhatsAppService._fmt_km(distance_km)} km). "
-            "Posso agendar a coleta nesse ponto para você? É só me dizer qual "
-            "exame e em qual período prefere."
+            f"Horário: {schedule}. No momento: {state}. Posso agendar a coleta "
+            "nesse ponto para você? É só me dizer qual exame e em qual período "
+            "prefere."
         )

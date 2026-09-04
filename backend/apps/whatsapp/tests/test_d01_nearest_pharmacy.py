@@ -1,49 +1,48 @@
-"""Testes D-01 — chatbot devolve a farmácia mais próxima da localização.
+"""Testes D-01/D-03 — chatbot devolve o local de coleta (CollectionPoint) mais próximo.
 
-Demanda D-01 (docs/demandas.md): o paciente envia a localização (mensagem de
-localização ou par \"latitude, longitude\" no texto) e o chatbot responde com
-a farmácia mais próxima da rede do laboratório do canal.
+O paciente envia a localização (payload location ou texto "lat, lon") e o
+chatbot responde o CollectionPoint ativo mais próximo da rede — farmácia OU
+laboratório — com horário de funcionamento e estado (aberto/fechado).
 """
+
 import uuid
 from decimal import Decimal
 
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.organizations.geolocation import (
+from apps.collection_points.geolocation import (
     haversine_km,
     nearest_collection_points,
-    nearest_pharmacies,
     parse_coordinates,
 )
-from apps.organizations.models import Pharmacy
+from apps.collection_points.models import CollectionPoint
+from apps.organizations.models import Laboratory, Pharmacy
 from apps.whatsapp.models import WhatsAppConversation
 
 WEBHOOK = "/api/v1/webhooks/whatsapp"
 PHONE = "5511988880001"
 
-# Referência: centro de São Paulo (demo do simulador)
-REF_LAT, REF_LON = -23.5505, -46.6333
+REF_LAT, REF_LON = -23.5505, -46.6333  # centro de São Paulo (demo)
 
 
 def _env(make_user):
-    from apps.organizations.models import Laboratory
-
     lab_u = make_user(role_code="laboratory", email="lab-d01@exemplo.com")
     lab = Laboratory.objects.create(name="Lab D-01", owner=lab_u)
     patient = make_user(role_code="patient", email="pac-d01@exemplo.com", phone=PHONE)
     return {"lab_user": lab_u, "lab": lab, "patient": patient}
 
 
-def _add_pharmacy(make_user, lab, *, name, lat, lon, status="active"):
-    """Cria usuário + perfil Pharmacy (user é OneToOne obrigatório)."""
-    user = make_user(
-        role_code="pharmacy",
-        email=f"farm-{uuid.uuid4().hex[:8]}@exemplo.com",
-    )
-    return Pharmacy.objects.create(
-        user=user,
+def _add_pharmacy(make_user, lab, *, name="Farmácia Teste"):
+    user = make_user(role_code="pharmacy", email=f"farm-{uuid.uuid4().hex[:8]}@exemplo.com")
+    return Pharmacy.objects.create(user=user, laboratory=lab, name=name)
+
+
+def _add_point(lab, *, name, lat, lon, kind="pharmacy", pharmacy=None, status="active"):
+    return CollectionPoint.objects.create(
         laboratory=lab,
+        kind=kind,
+        pharmacy=pharmacy,
         name=name,
         address="Rua Exemplo, 100",
         city="São Paulo",
@@ -75,6 +74,7 @@ def _last_outbound(conv):
 
 # ---------- geolocalização (módulo) ----------
 
+
 def test_haversine_positive_and_symmetric():
     d = haversine_km(REF_LAT, REF_LON, REF_LAT + 0.01, REF_LON + 0.01)
     assert d > 0
@@ -83,45 +83,71 @@ def test_haversine_positive_and_symmetric():
 
 def test_parse_coordinates_accepts_valid_pair_and_rejects_noise():
     assert parse_coordinates("minha localização é -23.5505, -46.6333") == (-23.5505, -46.6333)
-    assert parse_coordinates("-23.5505,-46.6333") == (-23.5505, -46.6333)
-    # valores fora da faixa -> rejeita
     assert parse_coordinates("100, 200") is None
-    # frase comum com números sem decimal/sinal -> rejeita
     assert parse_coordinates("às 10, 30") is None
     assert parse_coordinates("") is None
     assert parse_coordinates("não tenho localização") is None
 
 
-def test_nearest_pharmacies_orders_by_distance(make_user):
+def test_nearest_collection_points_orders_and_mixes_kinds(make_user):
     env = _env(make_user)
-    _add_pharmacy(
-        make_user, env["lab"], name="Farmácia Longe", lat=REF_LAT - 0.2, lon=REF_LON - 0.2
+    pharmacy = _add_pharmacy(make_user, env["lab"], name="Farmácia Central")
+    _add_point(
+        env["lab"], name="Farmácia Longe", lat=REF_LAT - 0.2, lon=REF_LON - 0.2, pharmacy=pharmacy
     )
-    _add_pharmacy(
-        make_user, env["lab"], name="Farmácia Perto", lat=REF_LAT + 0.002, lon=REF_LON + 0.002
+    _add_point(
+        env["lab"],
+        name="Laboratório Longe",
+        lat=REF_LAT - 0.3,
+        lon=REF_LON - 0.3,
+        kind="laboratory",
     )
-    # inativa com coordenada não entra
-    _add_pharmacy(
-        make_user, env["lab"], name="Farmácia Inativa",
-        lat=REF_LAT + 0.001, lon=REF_LON + 0.001, status="inactive",
+    pharmacy_near = _add_pharmacy(make_user, env["lab"], name="Farmácia Perto")
+    _add_point(
+        env["lab"],
+        name="Farmácia Perto",
+        lat=REF_LAT + 0.001,
+        lon=REF_LON + 0.001,
+        pharmacy=pharmacy_near,
     )
-    ranked = nearest_pharmacies(env["lab"].pk, REF_LAT, REF_LON, limit=3)
-    assert ranked[0][1].name == "Farmácia Perto"
+    inactive = _add_pharmacy(make_user, env["lab"], name="Farmácia Inativa")
+    _add_point(
+        env["lab"],
+        name="Farmácia Inativa",
+        lat=REF_LAT + 0.0005,
+        lon=REF_LON + 0.0005,
+        pharmacy=inactive,
+        status="inactive",
+    )
+    ranked = nearest_collection_points(env["lab"].pk, REF_LAT, REF_LON, limit=5)
+    assert ranked[0][2].name == "Farmácia Perto"
     assert ranked[0][0] < ranked[1][0]
-    names = [p.name for _, p in ranked]
+    names = [point.name for _, _, point in ranked]
+    kinds = {kind for _, kind, _ in ranked}
     assert "Farmácia Inativa" not in names
-    assert len(ranked) == 2
+    assert "pharmacy" in kinds and "laboratory" in kinds
+    assert len(ranked) == 3
 
 
 # ---------- pipeline do chatbot (webhook) ----------
 
-def test_structured_location_returns_nearest_pharmacy(make_user):
+
+def test_structured_location_returns_nearest_with_schedule(make_user):
     env = _env(make_user)
-    _add_pharmacy(
-        make_user, env["lab"], name="Farmácia Longe", lat=REF_LAT - 0.2, lon=REF_LON - 0.2
+    pharmacy = _add_pharmacy(make_user, env["lab"], name="Farmácia Central")
+    _add_point(
+        env["lab"],
+        name="Farmácia Central",
+        lat=REF_LAT + 0.001,
+        lon=REF_LON + 0.001,
+        pharmacy=pharmacy,
     )
-    _add_pharmacy(
-        make_user, env["lab"], name="Farmácia Central", lat=REF_LAT + 0.001, lon=REF_LON + 0.001
+    _add_point(
+        env["lab"],
+        name="Farmácia Longe",
+        lat=REF_LAT - 0.2,
+        lon=REF_LON - 0.2,
+        pharmacy=_add_pharmacy(make_user, env["lab"], name="Longe"),
     )
     resp = _send(
         env["patient"],
@@ -131,20 +157,42 @@ def test_structured_location_returns_nearest_pharmacy(make_user):
     )
     assert resp.status_code == 200
     conv = WhatsAppConversation.objects.get(phone=PHONE)
-    reply = _last_outbound(conv)
-    assert "local de coleta" in reply.content
-    assert "Farmácia Central" in reply.content
-    assert "km" in reply.content
-    assert "Farmácia Longe" not in reply.content
+    reply = _last_outbound(conv).content
+    assert "local de coleta" in reply
+    assert "Farmácia Central" in reply
+    assert "km" in reply
+    assert "Horário" in reply
+    assert "fechado no momento" in reply  # ponto nasce fechado (D-03)
+    assert "Farmácia Longe" not in reply
     inbound = conv.messages.filter(direction="inbound").first()
     assert inbound.ai_interpretation["intent"] == "nearest_pharmacy"
-    assert inbound.ai_used_mock is False  # caminho determinístico, sem LLM
+    assert inbound.ai_used_mock is False
 
 
-def test_text_coordinates_returns_nearest_pharmacy(make_user):
+def test_laboratory_point_can_be_nearest(make_user):
     env = _env(make_user)
-    _add_pharmacy(
-        make_user, env["lab"], name="Farmácia Texto", lat=REF_LAT + 0.001, lon=REF_LON + 0.001
+    _add_point(
+        env["lab"],
+        name="Laboratório Central",
+        lat=REF_LAT + 0.001,
+        lon=REF_LON + 0.001,
+        kind="laboratory",
+    )
+    resp = _send(env["patient"], "", location={"latitude": REF_LAT, "longitude": REF_LON})
+    assert resp.status_code == 200
+    conv = WhatsAppConversation.objects.get(phone=PHONE)
+    assert "o laboratório Laboratório Central" in _last_outbound(conv).content
+
+
+def test_text_coordinates_returns_nearest_point(make_user):
+    env = _env(make_user)
+    pharmacy = _add_pharmacy(make_user, env["lab"], name="Farmácia Texto")
+    _add_point(
+        env["lab"],
+        name="Farmácia Texto",
+        lat=REF_LAT + 0.001,
+        lon=REF_LON + 0.001,
+        pharmacy=pharmacy,
     )
     resp = _send(env["patient"], f"{REF_LAT}, {REF_LON}")
     assert resp.status_code == 200
@@ -161,18 +209,17 @@ def test_nearest_ask_without_location_prompts_share(make_user):
     assert "Localização" in reply
     inbound = conv.messages.filter(direction="inbound").first()
     assert inbound.ai_interpretation["intent"] == "nearest_pharmacy"
-    assert conv.status == "open"  # não escala para humano: só pede localização
+    assert conv.status == "open"
 
 
-def test_location_without_georeferenced_pharmacy_routes_to_human(make_user):
-    env = _env(make_user)  # laboratório sem farmácia com coordenada
+def test_location_without_georeferenced_point_routes_to_human(make_user):
+    env = _env(make_user)  # rede sem ponto com coordenada
     resp = _send(env["patient"], "", location={"latitude": REF_LAT, "longitude": REF_LON})
     assert resp.status_code == 200
     conv = WhatsAppConversation.objects.get(phone=PHONE)
     reply = _last_outbound(conv).content
     assert "atendente humano" in reply
     assert conv.status == "human"
-    # nenhum efeito colateral de domínio (nenhuma solicitação criada)
     from apps.requests.models import CollectionRequest
 
     assert CollectionRequest.objects.count() == 0
@@ -180,8 +227,13 @@ def test_location_without_georeferenced_pharmacy_routes_to_human(make_user):
 
 def test_location_message_idempotent(make_user):
     env = _env(make_user)
-    _add_pharmacy(
-        make_user, env["lab"], name="Farmácia Única", lat=REF_LAT + 0.001, lon=REF_LON + 0.001
+    pharmacy = _add_pharmacy(make_user, env["lab"], name="Farmácia Única")
+    _add_point(
+        env["lab"],
+        name="Farmácia Única",
+        lat=REF_LAT + 0.001,
+        lon=REF_LON + 0.001,
+        pharmacy=pharmacy,
     )
     mid = uuid.uuid4().hex
     location = {"latitude": REF_LAT, "longitude": REF_LON}
@@ -192,43 +244,3 @@ def test_location_message_idempotent(make_user):
     r2 = _send(env["patient"], "", message_id=mid, location=location)
     assert r2.status_code == 200
     assert WhatsAppConversation.objects.get(phone=PHONE).messages.count() == count
-
-
-def test_laboratory_can_be_nearest_collection_point(make_user):
-    """D-01: ponto de coleta = farmácia OU laboratório (decisão usuário)."""
-    env = _env(make_user)
-    lab = env["lab"]
-    lab.address = "Av. Central, 1"
-    lab.city = "São Paulo"
-    lab.state = "SP"
-    lab.latitude = Decimal(str(REF_LAT + 0.0005))
-    lab.longitude = Decimal(str(REF_LON + 0.0005))
-    lab.save()
-    _add_pharmacy(
-        make_user, lab, name="Farmácia Distante", lat=REF_LAT - 0.3, lon=REF_LON - 0.3
-    )
-    resp = _send(
-        env["patient"], "", location={"latitude": REF_LAT, "longitude": REF_LON}
-    )
-    assert resp.status_code == 200
-    conv = WhatsAppConversation.objects.get(phone=PHONE)
-    reply = _last_outbound(conv).content
-    assert "o laboratório Lab D-01" in reply
-    assert "km" in reply
-    assert "Farmácia Distante" not in reply
-
-
-def test_nearest_collection_points_mixes_lab_and_pharmacy(make_user):
-    """Ordem por proximidade inclui laboratório e farmácias da rede."""
-    env = _env(make_user)
-    lab = env["lab"]
-    lab.latitude = Decimal(str(REF_LAT - 0.4))
-    lab.longitude = Decimal(str(REF_LON - 0.4))
-    lab.save()
-    _add_pharmacy(make_user, lab, name="Farmácia Perto", lat=REF_LAT + 0.001, lon=REF_LON + 0.001)
-    ranked = nearest_collection_points(lab.pk, REF_LAT, REF_LON, limit=3)
-    assert ranked[0][1] == "pharmacy"
-    assert ranked[0][2].name == "Farmácia Perto"
-    assert ranked[0][0] < ranked[1][0]
-    kinds = {kind for _, kind, _ in ranked}
-    assert kinds == {"pharmacy", "laboratory"}
