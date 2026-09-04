@@ -6,6 +6,12 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.25 | 04/09/2026 | feat(login-demo): cartões de acesso direto de demonstração com 1 clique para Paciente, Laboratório, Farmácia, Técnico e Revendedor no /login. |
+| 1.1.24 | 04/09/2026 | feat(preview-contacts-gps): preview interativo multi-perfil, canais oficiais WhatsApp (F-07) em Laboratório e Farmácia, busca por GPS no simulador (F-09) e sincronização geral. |
+| 1.1.23 | 04/09/2026 | docs: parâmetros de IA oficiais (B-07) + .env.example. |
+| 1.1.22 | 04/09/2026 | feat(quotations): validade do orçamento de 15 dias (expiração automática após 15 dias). |
+| 1.1.21 | 04/09/2026 | chore(lint): ajustes de estilo pós-merge. |
+| 1.1.20 | 04/09/2026 | feat(preview-contacts-gps): preview interativo multi-perfil, canais oficiais WhatsApp (F-07) em Laboratório e Farmácia, e busca por GPS no simulador (F-09). |
 | 1.1.19 | 04/09/2026 | feat(resellers-audit): gestão completa de revendedores (F-05) e trilha de auditoria e conformidade (F-06). |
 | 1.1.18 | 04/09/2026 | feat(calendar-f04): calendário interativo multi-formato (semana/dia/WhatsApp) e CRUD completo de exames no laboratório (F-04). |
 | 1.1.17 | 04/09/2026 | feat(laboratorio): gestão de pontos de coleta (F-02/D-03: criação, janelas e técnicos) e pagamentos (F-03: cancel/refund). |
@@ -28,12 +34,6 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.11 | 04/09/2026 | docs: demandas reorganizadas por área — BACKEND (finaliza o agente atual) × FRONTEND (outro programador; novo docs/demandas-frontend.md com tarefas F-01…F-09 e endpoints prontos). AGENTS.md/README atualizados. |
 | 1.1.12 | 04/09/2026 | Orçamentos (B-05/G-08): RN-ORC-004/005 — revisão após validação/envio cria NOVA versão (rascunho; retorna a QUOTE_DRAFT via transições novas); versão APROVADA é imutável (409). Testes +3. |
 | 1.1.13 | 04/09/2026 | Gateway Pagar.me (B-01): adapter PagarMeGateway (Core v5, HTTP Basic com PAGARME_SECRET_KEY, POST {base}/orders, valores em centavos; endpoints via env) + seleção por PAYMENT_GATEWAY=pagarme + testes (3). Link/checkout e mapeamento de webhook a validar em sandbox. |
-| 1.1.14 | 04/09/2026 | Provedor WhatsApp Z-PRO/Dorislabs (B-03): apps/whatsapp/gateway.py (SimulatorProvider + ZProGateway env ZPRO_BASE_URL/ZPRO_TOKEN/ZPRO_SEND_PATH) e hook de envio outbound pós-resposta (erro não derruba o pipeline). Validação dos endpoints/payload com a coleção Z-PRO pendente de credenciais. Testes (3). |
-| 1.1.15 | 04/09/2026 | LGPD MVP (B-04): PatientConsent (migração 0002) + endpoints /patients/me/consent (GET/POST), /export e /anonymize (exclusão lógica, confirma DELETE) com auditoria + testes (4). Retenção/política de guarda: decisão pendente. |
-| 1.1.16 | 04/09/2026 | docs: status de B-01/B-03/B-04 e histórico no guia vivo. |
-| 1.1.20 | 04/09/2026 | Merge das linhas backend (1.1.13–1.1.16: Pagar.me, Z-PRO, LGPD, docs) e frontend (1.1.15–1.1.19: F-02/F-03/F-04/F-05/F-06, UX PWA). |
-| 1.1.21 | 04/09/2026 | chore: ajustes de estilo (ruff) pós-merge das linhas backend/frontend. |
-| 1.1.22 | 04/09/2026 | B-05: validade do orçamento final = 15 dias (QUOTATION_VALIDITY_DAYS, decisão usuário). Aprovação após expiração bloqueada (409 quote_expired); is_expired exposto na leitura. Testes +2. |
-| 1.1.23 | 04/09/2026 | B-07: parâmetros de IA oficiais documentados (tabela no guia §8; .env.example completo com Pagar.me/Z-PRO/agenda/orçamento). |
-| 1.1.24 | 04/09/2026 | Demandas evolutivas: D-05 receita médica — POST /requests/{id}/attachments aceita VÁRIAS imagens/PDFs; D-06/D-07 resultado de exame — ExamResult (URL externa) com registro/publicação por laboratório e página pública (JSON GET /results/{token} + página HTML /results/{token}/page). Testes +4. |
-| 1.1.25 | 04/09/2026 | docs: D-05/D-06/D-07 no registro, guia vivo e doc de frontend (F-10/F-11 + endpoints). |
+| 1.1.24 (backend) | 04/09/2026 | D-05 receita multifile + D-06/D-07 resultado de exame (URL + página pública por token) + 4 testes. |
+| 1.1.25 (backend) | 04/09/2026 | docs: D-05/D-06/D-07 no registro, guia vivo e doc de frontend (F-10/F-11). |
+| 1.1.26 | 04/09/2026 | Merge: integração das linhas backend (D-05…D-07) e frontend (F-07/F-09, login demo, previews). |

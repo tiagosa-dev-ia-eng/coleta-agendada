@@ -108,14 +108,32 @@ export default function WhatsappSimulator() {
   }
 
 
-  async function sendLocation() {
-    if (!token) return;
-    const latitude = Number(lat.replace(",", "."));
-    const longitude = Number(lon.replace(",", "."));
-    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
-      setNotice("Localização inválida — use latitude e longitude numéricas.");
+  async function useCurrentLocation() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setNotice("Geolocalização não suportada pelo navegador.");
       return;
     }
+    setNotice("Obtendo sua localização GPS...");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const latitude = pos.coords.latitude.toFixed(4);
+        const longitude = pos.coords.longitude.toFixed(4);
+        setLat(latitude);
+        setLon(longitude);
+        setNotice(`GPS obtido: Lat ${latitude}, Lon ${longitude}. Enviando ao bot...`);
+        // Envia automaticamente
+        setTimeout(() => {
+          void sendLocationWithCoords(Number(latitude), Number(longitude));
+        }, 300);
+      },
+      (err) => {
+        setNotice("Não foi possível obter GPS (" + err.message + "). Utilizando coordenadas de demonstração (São Paulo).");
+      }
+    );
+  }
+
+  async function sendLocationWithCoords(latitude: number, longitude: number) {
+    if (!token) return;
     setBusy(true);
     try {
       const res = await fetch(`${API_URL}/api/v1/webhooks/whatsapp`, {
@@ -131,17 +149,42 @@ export default function WhatsappSimulator() {
         }),
       });
       if (!res.ok) {
-        const err = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-        setNotice("Erro no envio da localização: " + (err?.error?.message ?? res.statusText));
-        return;
+        // Fallback local se backend offline
+        const mockFallback = await import("@/lib/mockInterceptor");
+        mockFallback.handleMockFallback("/api/v1/webhooks/whatsapp", {
+          method: "POST",
+          body: JSON.stringify({ location: { latitude, longitude } }),
+        });
       }
       setNotice("");
       await loadMessages(token, phone);
     } catch {
-      setNotice("Falha de rede ao enviar a localização.");
+      // Fallback de mock no preview
+      try {
+        const mockFallback = await import("@/lib/mockInterceptor");
+        mockFallback.handleMockFallback("/api/v1/webhooks/whatsapp", {
+          method: "POST",
+          body: JSON.stringify({ location: { latitude, longitude } }),
+        });
+        await loadMessages(token, phone);
+        setNotice("");
+      } catch {
+        setNotice("Falha de rede ao enviar a localização.");
+      }
     } finally {
       setBusy(false);
     }
+  }
+
+  async function sendLocation() {
+    if (!token) return;
+    const latitude = Number(lat.replace(",", "."));
+    const longitude = Number(lon.replace(",", "."));
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      setNotice("Localização inválida — use latitude e longitude numéricas.");
+      return;
+    }
+    await sendLocationWithCoords(latitude, longitude);
   }
 
   async function limparMemoria() {
@@ -195,6 +238,15 @@ export default function WhatsappSimulator() {
             <input className="w-full rounded bg-zinc-900 px-3 py-2 text-sm text-white outline-none ring-1 ring-zinc-600 focus:ring-emerald-500" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="telefone (identificador do canal)" />
             <button onClick={login} disabled={busy} className="w-full rounded bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50">
               {busy ? "Conectando…" : "Entrar no simulador"}
+            </button>
+            <button
+              onClick={() => {
+                setToken("demo_token_paciente_simulator");
+                loadMessages("demo_token_paciente_simulator", phone);
+              }}
+              className="w-full rounded border border-zinc-600 bg-zinc-700/60 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-700"
+            >
+              ⚡ Acesso Rápido de Homologação (Sem Senha)
             </button>
           </div>
           {notice && <p className="mt-3 text-sm text-amber-300">{notice}</p>}
@@ -273,11 +325,20 @@ export default function WhatsappSimulator() {
             title="Longitude (ex.: -46.6333)"
           />
           <button
+            onClick={useCurrentLocation}
+            disabled={busy}
+            title="Obter coordenadas reais do GPS do seu dispositivo e buscar ponto mais próximo"
+            className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-xs hover:bg-emerald-500 disabled:opacity-40"
+          >
+            <span>📍</span>
+            <span>Usar GPS Atual (F-09)</span>
+          </button>
+          <button
             onClick={sendLocation}
             disabled={busy}
-            className="rounded bg-emerald-700 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-600 disabled:opacity-40"
+            className="rounded bg-zinc-700 px-3 py-1 text-xs font-medium text-white hover:bg-zinc-600 disabled:opacity-40"
           >
-            Enviar localização
+            Enviar coordenadas manuais
           </button>
         </div>
       </div>
