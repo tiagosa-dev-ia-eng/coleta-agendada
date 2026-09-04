@@ -26,6 +26,9 @@ Validações de regra de negócio: **sempre no backend** (AGENTS.md §8).
 | D-03 | Backend ✅ | Ponto de coleta = entidade própria (farmácia OU laboratório) + agenda/disponibilidade | Implementada |
 | D-04 | Backend ✅ | Contatos WhatsApp por perfil (BSUID Meta) | Implementada |
 | F-01…F-08 | Frontend 🎨 | Telas/operações de frontend — ver handoff | Pendentes |
+| D-05 | Backend ✅ | Receita médica: receber VÁRIAS imagens/documentos p/ avaliação e orçamento | Implementada (v1.1.24) |
+| D-06 | Backend ✅ | Receber URL com o resultado do exame (registro/publicação pelo laboratório) | Implementada (v1.1.24) |
+| D-07 | Backend ✅ | Criar página com o resultado do exame (JSON + HTML públicos por token) | Implementada (v1.1.24) |
 
 ## 2. Backend — concluído (resumo por versão)
 
@@ -67,3 +70,13 @@ Técnico/revenda: 1 contato; farmácia/laboratório: lista. `WhatsAppContact` (n
 
 ### D-02 — Publicidade no perfil do paciente — 🎨 FRONTEND (aguarda definição)
 Exibição no perfil paciente; backend expõe fonte/regra quando definida (recomendação: parceiros = farmácias/pontos ativos do laboratório mais recente do paciente). Detalhes no doc de frontend.
+
+## 6. Demandas evolutiva/corretiva (D-05…D-07 — backend ✅ v1.1.24)
+
+- **D-05 — Receita em múltiplos arquivos:** `POST /api/v1/requests/{id}/attachments`
+  (multipart, campo `files[]`; imagens/PDF; validações de formato/tamanho).
+- **D-06 — URL do resultado:** laboratório registra `POST /requests/{id}/results`
+  {`result_url`, `note?`} e publica `POST /results/{id}/publish` (token gerado).
+- **D-07 — Página do resultado:** pública por token —
+  `GET /api/v1/results/{token}` (JSON) e `/results/{token}/page` (HTML com link).
+  Não publicado retorna 404. Auditoria em todas as ações.

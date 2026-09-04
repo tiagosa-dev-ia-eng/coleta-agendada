@@ -6,6 +6,8 @@ docs/BACKEND_GUIA_IA.md).
 
 | Versão | Data | Resumo |
 |---|---|---|
+| 1.1.28 | 04/09/2026 | feat(auth-nav): botões de logout globais e melhorias na navegação do formulário de login (v1.1.28) + sincronização com backend v1.1.27. |
+| 1.1.27 | 04/09/2026 | chore(collection_points): nova linha final em services.py. |
 | 1.1.26 | 04/09/2026 | feat(auth-nav): botões de logout explícitos no Shell e na barra de topo, seletor de categorias demo e navegação aperfeiçoada no formulário de login (chips rápidos, toggle de senha, atalhos). |
 | 1.1.25 | 04/09/2026 | feat(login-demo): cartões de acesso direto de demonstração com 1 clique para Paciente, Laboratório, Farmácia, Técnico e Revendedor no /login. |
 | 1.1.24 | 04/09/2026 | feat(preview-contacts-gps): preview interativo multi-perfil, canais oficiais WhatsApp (F-07) em Laboratório e Farmácia, busca por GPS no simulador (F-09) e sincronização geral. |
@@ -22,16 +24,3 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.13 | 04/09/2026 | docs(ux-pwa): relatório de análise técnica de UX, ergonomia para técnicos de campo e diretrizes PWA (docs/RELATORIO_ANALISE_TECNICA_UX_PWA.md). |
 | 1.1.0 | 04/09/2026 | Controle de versão interna (VERSION, scripts/bump-version.sh, targets make version-*, endpoint GET /api/v1/version). REGRA GERAL registrada: toda mudança incrementa a versão; validações de regra de negócio sempre no backend. |
 | 1.0.0 | 04/09/2026 | Baseline: M0–M9, D-01 (local de coleta mais próximo), D-03 (entidade CollectionPoint: agendamento/disponibilidade/técnico/aberto-fechado), D-04 (contatos WhatsApp/BSUID) e documentação viva (até commit bdf0e94). |
-| 1.1.1 | 04/09/2026 | CRUD de exames completo: retrieve, PATCH (name/active; código imutável) e DELETE soft (desativação) em /api/v1/exams/{pk} + testes. |
-| 1.1.2 | 04/09/2026 | Pagamentos: POST /api/v1/payments/{id}/cancel (pendente/link) e /refund (confirmado -> REFUNDED; comissões não revertem silenciosamente) + testes. |
-| 1.1.3 | 04/09/2026 | Auditoria: GET /api/v1/audit (superusuário) com filtros (action/entity_type/entity_id/user_id/start/end/limit) + testes. Escopo por laboratório: evolução (exige laboratório no AuditLog). |
-| 1.1.4 | 04/09/2026 | Contatos WhatsApp: PATCH /api/v1/whatsapp/contacts/{id} (nome/número/bsuid/principal; dono imutável; escopo por perfil) + teste. |
-| 1.1.5 | 04/09/2026 | Revenda: GET e PATCH /api/v1/resellers/{id} (status; laboratório) + testes. |
-| 1.1.6 | 04/09/2026 | docs: guia vivo do backend — endpoints novos de cobertura (exames/pagamentos/auditoria/contatos/revenda) no §6 e histórico. |
-| 1.1.7 | 04/09/2026 | Chatbot: economia de tokens — DEEPSEEK_MOCK=1 força mock mesmo com chave (validar respostas sem custo); consulta com protocolo CA- resolvida sem IA (determinística); testes (2). |
-| 1.1.8 | 04/09/2026 | docs: README com referência à versão interna (VERSION/CHANGELOG/GET /api/v1/version). |
-| 1.1.9 | 04/09/2026 | Auditoria escopada por laboratório: AuditLog.laboratory (migração 0002, derivação automática do usuário; explícito no WhatsApp/CollectionPoints); GET /audit — superusuário tudo, laboratório só o próprio (permissão audit.view) + testes (3). |
-| 1.1.10 | 04/09/2026 | Agenda sem conflito: coleta ocupa janela padrão (APPOINTMENT_SLOT_MINUTES, default 30 min, configurável); agendamento rejeita sobreposição no mesmo ponto (farmácia/laboratório) ou com o mesmo técnico (domiciliar) + testes (2). |
-| 1.1.11 | 04/09/2026 | docs: demandas reorganizadas por área — BACKEND (finaliza o agente atual) × FRONTEND (outro programador; novo docs/demandas-frontend.md com tarefas F-01…F-09 e endpoints prontos). AGENTS.md/README atualizados. |
-| 1.1.12 | 04/09/2026 | Orçamentos (B-05/G-08): RN-ORC-004/005 — revisão após validação/envio cria NOVA versão (rascunho; retorna a QUOTE_DRAFT via transições novas); versão APROVADA é imutável (409). Testes +3. |
-| 1.1.13 | 04/09/2026 | Gateway Pagar.me (B-01): adapter PagarMeGateway (Core v5, HTTP Basic com PAGARME_SECRET_KEY, POST {base}/orders, valores em centavos; endpoints via env) + seleção por PAYMENT_GATEWAY=pagarme + testes (3). Link/checkout e mapeamento de webhook a validar em sandbox. |

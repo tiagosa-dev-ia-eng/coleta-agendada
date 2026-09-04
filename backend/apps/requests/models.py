@@ -13,6 +13,12 @@ from django.db import models
 from apps.requests.statuses import CollectionMode, DesiredPeriod, RequestStatus
 
 
+def _result_token():
+    import secrets
+
+    return secrets.token_urlsafe(20)
+
+
 def _protocol():
     today = date.today().strftime("%Y%m%d")
     return f"CA-{today}-{secrets.token_hex(3).upper()}"
@@ -146,3 +152,57 @@ class RequestStatusHistory(models.Model):
 
     def __str__(self) -> str:
         return f"{self.request.protocol}: {self.from_status} -> {self.to_status}"
+
+
+class ExamResult(models.Model):
+    """Resultado de exame (D-06/D-07): URL externa e página pública de resultado.
+
+    O laboratório registra a URL com o resultado (sistema externo) e publica;
+    a publicação gera token de acesso para a PÁGINA pública do resultado.
+    """
+
+    request = models.ForeignKey(
+        CollectionRequest,
+        on_delete=models.CASCADE,
+        related_name="exam_results",
+        verbose_name="solicitação",
+    )
+    token = models.CharField(
+        max_length=48, unique=True, default=_result_token, editable=False, verbose_name="token"
+    )
+    result_url = models.URLField(
+        blank=True, verbose_name="URL externa do resultado"
+    )
+    note = models.TextField(blank=True, verbose_name="observação do resultado")
+    published = models.BooleanField(default=False, verbose_name="publicado")
+    published_at = models.DateTimeField(null=True, blank=True, verbose_name="publicado em")
+    published_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="published_exam_results",
+        verbose_name="publicado por",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_exam_results",
+        verbose_name="criado por",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "resultado de exame"
+        verbose_name_plural = "resultados de exames"
+
+    def __str__(self) -> str:
+        state = "publicado" if self.published else "rascunho"
+        return f"Resultado {self.request.protocol} ({state})"
+
+    def page_url(self):
+        return f"/api/v1/results/{self.token}/page"
