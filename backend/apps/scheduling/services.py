@@ -48,6 +48,14 @@ class AppointmentService:
             raise SchedulingError(detail="Modalidade farmácia exige pharmacy_id.")
         if mode == AppointmentMode.DOMICILIARY and technician is None:
             raise SchedulingError(detail="Modalidade domiciliar exige technician_id.")
+        point = AppointmentService._resolve_point(lab, mode, scheduled_at, pharmacy)
+        if mode != AppointmentMode.DOMICILIARY and point is None:
+            label = (
+                "A farmácia informada"
+                if mode == AppointmentMode.PHARMACY
+                else "A unidade do laboratório"
+            )
+            raise SchedulingError(detail=f"{label} não é um ponto de coleta ativo.")
         appt = Appointment.objects.create(
             request=request_obj,
             mode=mode,
@@ -78,6 +86,39 @@ class AppointmentService:
             },
         )
         return appt
+
+    @staticmethod
+    def _resolve_point(lab, mode, scheduled_at, pharmacy=None):
+        """Ponto de coleta válido para o agendamento (D-03).
+
+        Modalidades em ponto (pharmacy/laboratory) exigem ponto ATIVO e
+        disponibilidade no horário (janelas semanais + fechado hoje). Retorna
+        o ponto escolhido ou None quando não há candidato ativo; levanta
+        SchedulingError quando existe ponto mas sem disponibilidade.
+        """
+        from apps.collection_points import services as point_services
+        from apps.collection_points.models import CollectionPoint, PointKind
+
+        if mode == AppointmentMode.DOMICILIARY:
+            return None
+        qs = CollectionPoint.objects.filter(laboratory=lab, status="active")
+        if mode == AppointmentMode.PHARMACY:
+            qs = qs.filter(kind=PointKind.PHARMACY, pharmacy=pharmacy)
+        else:
+            qs = qs.filter(kind=PointKind.LABORATORY)
+        candidates = list(qs.order_by("name"))
+        if not candidates:
+            return None
+        last_error = None
+        for point in candidates:
+            try:
+                point_services.check_schedule_availability(point, scheduled_at)
+                return point
+            except point_services.CollectionPointError as exc:
+                last_error = exc
+        if last_error is not None:
+            raise SchedulingError(detail=str(last_error))
+        raise SchedulingError(detail="Sem disponibilidade no horário solicitado.")
 
     @staticmethod
     def check_in(appt, *, performed_by, request=None):

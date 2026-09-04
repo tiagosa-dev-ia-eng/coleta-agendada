@@ -20,6 +20,11 @@ def _env(make_user):
     pharm = Pharmacy.objects.create(
         user=ph_u, laboratory=lab, reseller=res, name="Farmácia Com", status="active"
     )
+    from apps.collection_points.models import CollectionPoint
+
+    CollectionPoint.objects.create(
+        laboratory=lab, kind="pharmacy", pharmacy=pharm, name=pharm.name
+    )
     tc_u = make_user(role_code="technician", email="tec-com@exemplo.com")
     tech = Technician.objects.create(user=tc_u, laboratory=lab, reseller=res, status="active")
     return {

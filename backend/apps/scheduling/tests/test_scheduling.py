@@ -1,8 +1,9 @@
 """Testes M5 — agendamento e realização (CT-INT-003/004/005; doc 14 §2)."""
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 
 from django.core.management import call_command
 
+from apps.collection_points.models import CollectionPoint
 from apps.organizations.models import Laboratory, Pharmacy
 from apps.technicians.models import Technician
 
@@ -18,6 +19,10 @@ def _pharmacy(make_user, lab):
     u = make_user(role_code="pharmacy", email="farm-agen@exemplo.com")
     pharm = Pharmacy.objects.create(
         user=u, laboratory=lab, name="Farmácia Central", status="active"
+    )
+    # D-03: farmácia vira ponto de coleta (recebe agendamento)
+    CollectionPoint.objects.create(
+        laboratory=lab, kind="pharmacy", pharmacy=pharm, name=pharm.name
     )
     return pharm, u
 
@@ -195,3 +200,82 @@ def test_agenda_scoped_per_profile(make_user, auth_client):
     assert [x["id"] for x in tech_agenda] == [a2]
     # paciente 1 não vê agendamento do paciente 2
     assert p1.get(f"/api/v1/appointments/{a2}").status_code == 403
+
+
+# ---------- D-03: agendamento respeita disponibilidade do ponto ----------
+
+def _next_at_10am(days_ahead):
+    target = datetime.now(UTC) + timedelta(days=days_ahead)
+    return target.replace(hour=10, minute=0, second=0, microsecond=0)
+
+
+def _full_day_window(point, weekday):
+    from apps.collection_points.models import OpeningWindow
+
+    OpeningWindow.objects.create(
+        point=point, weekday=weekday, open_time=time(0, 0), close_time=time(23, 59, 59)
+    )
+
+
+def test_pharmacy_must_host_active_point(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    p_user = make_user(role_code="pharmacy", email="farm-semponto@exemplo.com")
+    Pharmacy.objects.create(user=p_user, laboratory=lab, name="Sem Ponto", status="active")
+    _, _, req_id, lclient = _approved_request(make_user, auth_client, lab_user)
+    when = _when()
+    resp = lclient.post(
+        f"/api/v1/requests/{req_id}/appointment",
+        {"mode": "pharmacy", "scheduled_at": when, "pharmacy_id": p_user.pharmacy_profile.pk},
+        format="json",
+    )
+    assert resp.status_code == 409
+    assert "ponto de coleta" in resp.json()["error"]["message"]
+
+
+def test_schedule_inside_window_is_allowed(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    pharmacy, _ = _pharmacy(make_user, lab)
+    point = CollectionPoint.objects.get(pharmacy=pharmacy)
+    when = _next_at_10am(2)
+    _full_day_window(point, when.weekday())
+    _, _, req_id, lclient = _approved_request(make_user, auth_client, lab_user)
+    resp = lclient.post(
+        f"/api/v1/requests/{req_id}/appointment",
+        {"mode": "pharmacy", "scheduled_at": when.isoformat(), "pharmacy_id": pharmacy.pk},
+        format="json",
+    )
+    assert resp.status_code == 201, resp.content
+
+
+def test_schedule_outside_window_rejected(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    pharmacy, _ = _pharmacy(make_user, lab)
+    point = CollectionPoint.objects.get(pharmacy=pharmacy)
+    when = _next_at_10am(2)
+    # janela apenas em outro dia da semana
+    _full_day_window(point, (when.weekday() + 1) % 7)
+    _, _, req_id, lclient = _approved_request(make_user, auth_client, lab_user)
+    resp = lclient.post(
+        f"/api/v1/requests/{req_id}/appointment",
+        {"mode": "pharmacy", "scheduled_at": when.isoformat(), "pharmacy_id": pharmacy.pk},
+        format="json",
+    )
+    assert resp.status_code == 409
+    assert "funcionamento" in resp.json()["error"]["message"]
+
+
+def test_schedule_closed_today_rejected(make_user, auth_client):
+    lab_user, lab = _lab(make_user)
+    pharmacy, _ = _pharmacy(make_user, lab)
+    point = CollectionPoint.objects.get(pharmacy=pharmacy)
+    when = datetime.now(UTC).replace(hour=10, minute=0, second=0, microsecond=0)
+    _full_day_window(point, when.weekday())
+    # ponto nasce fechado (is_open=False) e segue fechado hoje
+    _, _, req_id, lclient = _approved_request(make_user, auth_client, lab_user)
+    resp = lclient.post(
+        f"/api/v1/requests/{req_id}/appointment",
+        {"mode": "pharmacy", "scheduled_at": when.isoformat(), "pharmacy_id": pharmacy.pk},
+        format="json",
+    )
+    assert resp.status_code == 409
+    assert "fechado hoje" in resp.json()["error"]["message"]
