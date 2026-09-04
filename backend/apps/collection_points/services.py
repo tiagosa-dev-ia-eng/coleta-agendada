@@ -133,3 +133,56 @@ def close_point(point, *, technician, by_user=None):
         metadata={"session_id": session.pk},
     )
     return session
+
+
+# Dias da semana (Python: 0=segunda..6=domingo) e abreviações pt-BR
+WEEKDAY_LABELS = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"]
+
+
+def _fmt_time(value):
+    return value.strftime("%H:%M")
+
+
+def schedule_summary(point):
+    """Resumo textual da grade semanal, agrupando dias com janelas iguais.
+
+    Ex.: "seg–sex 07:00-12:00, 13:00-19:00; sáb 08:00-12:00".
+    """
+    grouped = {}
+    for weekday in range(7):
+        windows = windows_for(point, weekday)
+        if not windows:
+            continue
+        key = tuple(
+            (_fmt_time(w.open_time), _fmt_time(w.close_time))
+            for w in windows
+        )
+        grouped.setdefault(key, []).append(weekday)
+    if not grouped:
+        return "sem horário cadastrado"
+
+    def render_days(days):
+        days = sorted(days)
+        parts = []
+        start = prev = days[0]
+        for day in days[1:]:
+            if day == prev + 1:
+                prev = day
+                continue
+            parts.append((start, prev))
+            start = prev = day
+        parts.append((start, prev))
+        return ", ".join(
+            f"{WEEKDAY_LABELS[a]}-{WEEKDAY_LABELS[b]}" if a != b else WEEKDAY_LABELS[a]
+            for a, b in parts
+        )
+
+    blocks = []
+    for key, days in sorted(grouped.items(), key=lambda item: min(item[1])):
+        hours = ", ".join(f"{o}-{c}" for o, c in key)
+        blocks.append(f"{render_days(days)} {hours}")
+    return "; ".join(blocks)
+
+
+def open_state_label(point):
+    return "aberto agora" if point.is_open else "fechado no momento"
