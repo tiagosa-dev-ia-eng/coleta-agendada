@@ -98,7 +98,17 @@ class ResellerCreateSerializer(_EntityBaseSerializer):
 
     class Meta:
         model = Reseller
-        fields = ["id", "status", "email", "password", "first_name", "user_id", "email_read", "name", "created_at"]
+        fields = [
+            "id",
+            "status",
+            "email",
+            "password",
+            "first_name",
+            "user_id",
+            "email_read",
+            "name",
+            "created_at",
+        ]
         read_only_fields = ["id", "user_id", "email_read", "name", "created_at"]
 
     def role_code(self):

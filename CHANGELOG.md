@@ -32,3 +32,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.15 | 04/09/2026 | LGPD MVP (B-04): PatientConsent (migração 0002) + endpoints /patients/me/consent (GET/POST), /export e /anonymize (exclusão lógica, confirma DELETE) com auditoria + testes (4). Retenção/política de guarda: decisão pendente. |
 | 1.1.16 | 04/09/2026 | docs: status de B-01/B-03/B-04 e histórico no guia vivo. |
 | 1.1.20 | 04/09/2026 | Merge das linhas backend (1.1.13–1.1.16: Pagar.me, Z-PRO, LGPD, docs) e frontend (1.1.15–1.1.19: F-02/F-03/F-04/F-05/F-06, UX PWA). |
+| 1.1.21 | 04/09/2026 | chore: ajustes de estilo (ruff) pós-merge das linhas backend/frontend. |
