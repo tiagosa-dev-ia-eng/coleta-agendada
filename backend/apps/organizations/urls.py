@@ -19,6 +19,11 @@ urlpatterns = [
         name="reseller-list",
     ),
     path(
+        "resellers/<int:pk>",
+        views.ResellerViewSet.as_view({"get": "retrieve", "patch": "partial_update"}),
+        name="reseller-detail",
+    ),
+    path(
         "pharmacies",
         views.PharmacyViewSet.as_view({"get": "list", "post": "create"}),
         name="pharmacy-list",

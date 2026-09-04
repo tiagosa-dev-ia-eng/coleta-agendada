@@ -103,3 +103,12 @@ class ResellerCreateSerializer(_EntityBaseSerializer):
 
     def entity_name(self):
         return "reseller"
+
+
+class ResellerUpdateSerializer(serializers.ModelSerializer):
+    """Edição de revendedor (status; demais vínculos por recriação)."""
+
+    class Meta:
+        model = Reseller
+        fields = ["id", "status"]
+        read_only_fields = ["id"]

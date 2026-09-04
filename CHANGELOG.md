@@ -12,3 +12,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.2 | 04/09/2026 | Pagamentos: POST /api/v1/payments/{id}/cancel (pendente/link) e /refund (confirmado -> REFUNDED; comissões não revertem silenciosamente) + testes. |
 | 1.1.3 | 04/09/2026 | Auditoria: GET /api/v1/audit (superusuário) com filtros (action/entity_type/entity_id/user_id/start/end/limit) + testes. Escopo por laboratório: evolução (exige laboratório no AuditLog). |
 | 1.1.4 | 04/09/2026 | Contatos WhatsApp: PATCH /api/v1/whatsapp/contacts/{id} (nome/número/bsuid/principal; dono imutável; escopo por perfil) + teste. |
+| 1.1.5 | 04/09/2026 | Revenda: GET e PATCH /api/v1/resellers/{id} (status; laboratório) + testes. |

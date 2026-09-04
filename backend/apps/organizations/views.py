@@ -11,6 +11,7 @@ from apps.organizations.serializers import (
     LaboratorySerializer,
     PharmacyCreateSerializer,
     ResellerCreateSerializer,
+    ResellerUpdateSerializer,
 )
 
 
@@ -104,6 +105,23 @@ class ResellerViewSet(viewsets.GenericViewSet):
 
     def list(self, request):
         return Response(self.serializer_class(self.get_queryset(), many=True).data)
+
+    def retrieve(self, request, pk=None):
+        reseller = self.get_queryset().filter(pk=pk).first()
+        if reseller is None:
+            raise PermissionDenied()
+        return Response(self.serializer_class(reseller).data)
+
+    def partial_update(self, request, pk=None):
+        if not scope.is_laboratory_admin(request.user):
+            raise PermissionDenied("Somente o laboratório pode editar revendedores.")
+        reseller = self.get_queryset().filter(pk=pk).first()
+        if reseller is None:
+            raise PermissionDenied()
+        ser = ResellerUpdateSerializer(reseller, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        return Response(ResellerUpdateSerializer(reseller).data)
 
     def create(self, request):
         if not scope.is_laboratory_admin(request.user):
