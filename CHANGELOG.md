@@ -25,3 +25,18 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.13 | 04/09/2026 | docs(ux-pwa): relatório de análise técnica de UX, ergonomia para técnicos de campo e diretrizes PWA (docs/RELATORIO_ANALISE_TECNICA_UX_PWA.md). |
 | 1.1.0 | 04/09/2026 | Controle de versão interna (VERSION, scripts/bump-version.sh, targets make version-*, endpoint GET /api/v1/version). REGRA GERAL registrada: toda mudança incrementa a versão; validações de regra de negócio sempre no backend. |
 | 1.0.0 | 04/09/2026 | Baseline: M0–M9, D-01 (local de coleta mais próximo), D-03 (entidade CollectionPoint: agendamento/disponibilidade/técnico/aberto-fechado), D-04 (contatos WhatsApp/BSUID) e documentação viva (até commit bdf0e94). |
+
+### Registro consolidado — BACKEND (04/09/2026)
+
+| Versão | Entrega |
+|---|---|
+| 1.1.9 | Auditoria por laboratório (AuditLog.laboratory; GET /audit escopado) |
+| 1.1.10 | Agenda sem conflito (APPOINTMENT_SLOT_MINUTES 30 min) |
+| 1.1.12 | Orçamentos RN-ORC-004/005 — revisão vira nova versão; aprovada imutável |
+| 1.1.13 | Gateway Pagar.me (B-01) via adapter Core v5 |
+| 1.1.14 | Provedor WhatsApp Z-PRO/Dorislabs (B-03) — outbound |
+| 1.1.15 | LGPD MVP (B-04) — consentimento/exportação/anonimização |
+| 1.1.22 | Validade do orçamento de 15 dias (B-05) |
+| 1.1.23 | Parâmetros de IA oficiais (B-07) + .env.example |
+| 1.1.24/1.1.25 | D-05 receita multifile; D-06/D-07 resultado de exame (URL + página) |
+| 1.1.30 | 04/09/2026 | docs: registro consolidado do backend no changelog + integração frontend v1.1.26–1.1.29. |
