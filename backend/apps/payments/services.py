@@ -108,6 +108,46 @@ class PaymentService:
         return payment
 
     @staticmethod
+    def cancel(payment, *, cancelled_by=None, http_request=None):
+        """Cancela link/pagamento ainda não pago (PENDING/LINK_CREATED)."""
+        if payment.status not in (
+            PaymentStatus.PENDING,
+            PaymentStatus.LINK_CREATED,
+        ):
+            raise PaymentError(
+                detail="Somente pagamento pendente/link pode ser cancelado."
+            )
+        _transition(payment, PaymentStatus.CANCELED)
+        _audit(
+            http_request,
+            "payment.canceled",
+            payment,
+            {"code": payment.code},
+        )
+        return payment
+
+    @staticmethod
+    def refund(payment, *, refunded_by=None, http_request=None):
+        """Estorna pagamento CONFIRMADO (regra: estorno explícito).
+
+        Comissões geradas na confirmação NÃO são revertidas aqui — o estorno
+        de comissão é fluxo explícito e separado (commission reverse), sem
+        apagar lançamento (AGENTS.md regra 9 / ADR-010).
+        """
+        if payment.status != PaymentStatus.CONFIRMED:
+            raise PaymentError(
+                detail="Somente pagamento confirmado pode ser estornado."
+            )
+        _transition(payment, PaymentStatus.REFUNDED)
+        _audit(
+            http_request,
+            "payment.refunded",
+            payment,
+            {"code": payment.code, "amount": str(payment.amount)},
+        )
+        return payment
+
+    @staticmethod
     def confirm(payment, *, confirmed_by=None, http_request=None, origin="manual"):
         """Confirma manual (financeiro) ou via webhook. Idempotente quando CONFIRMED."""
         if payment.status == PaymentStatus.CONFIRMED and payment.paid_at:

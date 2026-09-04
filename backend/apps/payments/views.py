@@ -92,6 +92,32 @@ class PaymentConfirmView(APIView):
         return Response(PaymentReadSerializer(payment).data)
 
 
+class PaymentCancelView(APIView):
+    """POST /payments/{pk}/cancel — cancelamento de link/pagamento pendente."""
+
+    def post(self, request, pk=None):
+        payment = Payment.objects.filter(pk=pk).first()
+        if payment is None:
+            raise PermissionDenied()
+        if not _lab_only(request.user):
+            raise PermissionDenied("Somente o laboratório cancela pagamentos.")
+        PaymentService.cancel(payment, cancelled_by=request.user, http_request=request)
+        return Response(PaymentReadSerializer(payment).data)
+
+
+class PaymentRefundView(APIView):
+    """POST /payments/{pk}/refund — estorno de pagamento confirmado."""
+
+    def post(self, request, pk=None):
+        payment = Payment.objects.filter(pk=pk).first()
+        if payment is None:
+            raise PermissionDenied()
+        if not _lab_only(request.user):
+            raise PermissionDenied("Somente o laboratório estorna pagamentos.")
+        PaymentService.refund(payment, refunded_by=request.user, http_request=request)
+        return Response(PaymentReadSerializer(payment).data)
+
+
 class PaymentWebhookView(APIView):
     """POST /payments/webhook — callback do provedor (CT-INT-008 idempotente).
 

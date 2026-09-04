@@ -19,5 +19,15 @@ urlpatterns = [
         views.PaymentConfirmView.as_view(),
         name="payment-confirm",
     ),
+    path(
+        "payments/<int:pk>/cancel",
+        views.PaymentCancelView.as_view(),
+        name="payment-cancel",
+    ),
+    path(
+        "payments/<int:pk>/refund",
+        views.PaymentRefundView.as_view(),
+        name="payment-refund",
+    ),
     path("payments/webhook", views.PaymentWebhookView.as_view(), name="payment-webhook"),
 ]
