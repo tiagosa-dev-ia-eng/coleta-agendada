@@ -12,3 +12,9 @@ class HealthChecksTests(TestCase):
         resp = self.client.get("/ready")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["checks"]["database"], "ok")
+
+    def test_version_internal_endpoint(self):
+        resp = self.client.get("/version")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["name"], "coleta-agendada-api")
+        self.assertRegex(resp.json()["version"], r"^\d+\.\d+\.\d+$")

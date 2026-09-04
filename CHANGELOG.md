@@ -1,0 +1,10 @@
+# Changelog
+
+Controle de versão INTERNO do projeto (REGRA GERAL: incrementar a cada mudança
+e manter SEMPRE atualizado/publicado no GitHub — ver AGENTS.md e
+docs/BACKEND_GUIA_IA.md).
+
+| Versão | Data | Resumo |
+|---|---|---|
+| 1.1.0 | 04/09/2026 | Controle de versão interna (VERSION, scripts/bump-version.sh, targets make version-*, endpoint GET /api/v1/version). REGRA GERAL registrada: toda mudança incrementa a versão; validações de regra de negócio sempre no backend. |
+| 1.0.0 | 04/09/2026 | Baseline: M0–M9, D-01 (local de coleta mais próximo), D-03 (entidade CollectionPoint: agendamento/disponibilidade/técnico/aberto-fechado), D-04 (contatos WhatsApp/BSUID) e documentação viva (até commit bdf0e94). |

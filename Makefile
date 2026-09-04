@@ -71,3 +71,16 @@ infra-logs: ## logs da stack
 # ---------- smoke ----------
 smoke: ## verifica health checks do backend (dev na porta 8000)
 	curl -s http://localhost:8000/health && echo && curl -s http://localhost:8000/ready && echo
+
+# ---------- versão interna (REGRA GERAL: bump a cada mudança e publicar) ----------
+version: ## mostra a versão atual do projeto
+	@cat VERSION
+
+version-patch: ## bump patch (correções) — rode e envie VERSION/CHANGELOG ao GitHub
+	@bash scripts/bump-version.sh patch
+
+version-minor: ## bump minor (novas funcionalidades)
+	@bash scripts/bump-version.sh minor
+
+version-major: ## bump major (mudanças que quebram contrato/domínio)
+	@bash scripts/bump-version.sh major

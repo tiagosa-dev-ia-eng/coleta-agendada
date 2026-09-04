@@ -29,3 +29,20 @@ def ready(request):
         ok = False
     payload = {"status": "ok" if ok else "degraded", "checks": checks}
     return JsonResponse(payload, status=200 if ok else 503)
+
+
+
+@require_GET
+def version(request):
+    """Versão interna do projeto (controle de versão — VERSION na raiz)."""
+    import pathlib
+
+    from django.conf import settings
+
+    version_file = pathlib.Path(settings.BASE_DIR).parent / "VERSION"
+    try:
+        value = version_file.read_text(encoding="utf-8").strip()
+    except OSError:
+        value = "unknown"
+    return JsonResponse({"name": SERVICE, "version": value})
+
