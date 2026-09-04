@@ -10,3 +10,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.0.0 | 04/09/2026 | Baseline: M0–M9, D-01 (local de coleta mais próximo), D-03 (entidade CollectionPoint: agendamento/disponibilidade/técnico/aberto-fechado), D-04 (contatos WhatsApp/BSUID) e documentação viva (até commit bdf0e94). |
 | 1.1.1 | 04/09/2026 | CRUD de exames completo: retrieve, PATCH (name/active; código imutável) e DELETE soft (desativação) em /api/v1/exams/{pk} + testes. |
 | 1.1.2 | 04/09/2026 | Pagamentos: POST /api/v1/payments/{id}/cancel (pendente/link) e /refund (confirmado -> REFUNDED; comissões não revertem silenciosamente) + testes. |
+| 1.1.3 | 04/09/2026 | Auditoria: GET /api/v1/audit (superusuário) com filtros (action/entity_type/entity_id/user_id/start/end/limit) + testes. Escopo por laboratório: evolução (exige laboratório no AuditLog). |

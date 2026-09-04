@@ -4,7 +4,6 @@ Segurança (menor privilégio): endpoint restrito a SUPERUSUÁRIO nesta versão.
 A permissão 'audit.view' existe no catálogo para laboratório; escopo por
 laboratório exige atribuir o laboratório no AuditLog — evolução registrada.
 """
-from django.db.models import Q
 from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
