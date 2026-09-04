@@ -50,6 +50,7 @@ Esse pacote contém 18 documentos numerados (`01-…` a `18-…`), o consolidado
 | User stories e backlog inicial (US-xxx) | `17-user-stories-e-backlog-inicial.md` |
 | Decisões arquiteturais (ADR-001..010) | `18-decisoes-arquiteturais-adr.md` |
 | **Demandas do alinhamento (D-xx)** | `docs/demandas.md` — registro vivo das demandas do cliente |
+| **Demandas de FRONTEND (handoff)** | `docs/demandas-frontend.md` — outro programador (D-02 + F-01…F-09) |
 | **Guia vivo do backend p/ IAs de código** | `docs/BACKEND_GUIA_IA.md` — REGRA GERAL: atualizar a cada mudança no backend |
 
 O plano de implementação do projeto está em `PLANO_DE_IMPLEMENTACAO.md` (raiz).

@@ -18,3 +18,4 @@ docs/BACKEND_GUIA_IA.md).
 | 1.1.8 | 04/09/2026 | docs: README com referência à versão interna (VERSION/CHANGELOG/GET /api/v1/version). |
 | 1.1.9 | 04/09/2026 | Auditoria escopada por laboratório: AuditLog.laboratory (migração 0002, derivação automática do usuário; explícito no WhatsApp/CollectionPoints); GET /audit — superusuário tudo, laboratório só o próprio (permissão audit.view) + testes (3). |
 | 1.1.10 | 04/09/2026 | Agenda sem conflito: coleta ocupa janela padrão (APPOINTMENT_SLOT_MINUTES, default 30 min, configurável); agendamento rejeita sobreposição no mesmo ponto (farmácia/laboratório) ou com o mesmo técnico (domiciliar) + testes (2). |
+| 1.1.11 | 04/09/2026 | docs: demandas reorganizadas por área — BACKEND (finaliza o agente atual) × FRONTEND (outro programador; novo docs/demandas-frontend.md com tarefas F-01…F-09 e endpoints prontos). AGENTS.md/README atualizados. |

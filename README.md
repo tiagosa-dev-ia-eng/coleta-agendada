@@ -33,6 +33,7 @@ Plataforma que digitaliza o processo de solicitação, orçamento, aprovação, 
 
 - **Fonte da verdade:** `docs/Coleta_Agendada_Documentacao_Tecnica_v1.0/` (docs 01–18).
 - **Demandas do alinhamento:** `docs/demandas.md` (D-01/D-02).
+- **Demandas de FRONTEND (handoff):** `docs/demandas-frontend.md`.
 - **Guia vivo do backend (IAs de código):** `docs/BACKEND_GUIA_IA.md` — atualizar a cada mudança no backend.
 - **Como trabalhar:** leia `AGENTS.md` antes de codificar.
 - **Roteiro de execução:** `PLANO_DE_IMPLEMENTACAO.md`.
