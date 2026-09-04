@@ -1,3 +1,4 @@
+| 1.1.13 | docs: relatório técnico de análise de UX, ergonomia e PWA para coleta domiciliar e pontos parceiros |
 # Demandas do alinhamento — organizadas por área
 
 Registro vivo das demandas do cliente (origem: alinhamento; `docs/anotacao.txt` não é versionado).
