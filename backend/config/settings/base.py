@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.quotations",
     "apps.core",
     "apps.audit",
+    "apps.collection_points",
 ]
 
 # Usuário customizado do domínio (doc 06 — User com email/phone/document/role)
