@@ -420,6 +420,94 @@ export function handleMockFallback<T>(path: string, init?: RequestInit): T {
     }
   }
 
+  // /users (D-08 / F-10: Gestão de Usuários e Perfis do Laboratório)
+  if (cleanPath.includes("/api/v1/users")) {
+    const matchId = cleanPath.match(/\/users\/(\d+)/);
+    const userId = matchId ? parseInt(matchId[1], 10) : null;
+
+    if (method === "GET") {
+      if (userId) {
+        const u = state.users.find((item) => item.id === userId);
+        if (u) return u as T;
+      }
+      return state.users as T;
+    }
+
+    if (method === "POST") {
+      const newUser = {
+        id: Date.now(),
+        email: body.email || `usuario.${Date.now()}@laboratorio.com`,
+        name: body.name || body.full_name || "Novo Usuário",
+        role: {
+          code: body.role_code || body.role || "laboratory_attendant",
+          name:
+            body.role_name ||
+            (body.role === "laboratory_admin"
+              ? "Administrador / Gestor"
+              : body.role === "technician"
+              ? "Técnico de Enfermagem"
+              : "Atendente / Triagem"),
+        },
+        is_active: body.is_active !== undefined ? Boolean(body.is_active) : true,
+        date_joined: new Date().toISOString(),
+      };
+      state.users.unshift(newUser);
+
+      state.auditLogs.unshift({
+        id: Date.now(),
+        action: "user.created",
+        entity_type: "accounts.User",
+        entity_id: newUser.id,
+        user: { id: state.me.id, email: state.me.email },
+        ip: "189.40.122.10",
+        metadata: { email: newUser.email, role: newUser.role.code },
+        created_at: new Date().toISOString(),
+      });
+
+      saveMockData(state);
+      return newUser as T;
+    }
+
+    if (method === "PATCH" && userId) {
+      const idx = state.users.findIndex((item) => item.id === userId);
+      if (idx !== -1) {
+        const current = state.users[idx];
+        const updated = {
+          ...current,
+          name: body.name !== undefined ? body.name : current.name,
+          email: body.email !== undefined ? body.email : current.email,
+          is_active: body.is_active !== undefined ? Boolean(body.is_active) : current.is_active,
+          role: body.role_code
+            ? {
+                code: body.role_code,
+                name:
+                  body.role_code === "laboratory_admin"
+                    ? "Administrador / Gestor"
+                    : body.role_code === "technician"
+                    ? "Técnico de Enfermagem"
+                    : "Atendente / Triagem",
+              }
+            : current.role,
+        };
+        state.users[idx] = updated;
+
+        state.auditLogs.unshift({
+          id: Date.now(),
+          action: "user.updated",
+          entity_type: "accounts.User",
+          entity_id: updated.id,
+          user: { id: state.me.id, email: state.me.email },
+          ip: "189.40.122.10",
+          metadata: { email: updated.email, changed: body },
+          created_at: new Date().toISOString(),
+        });
+
+        saveMockData(state);
+        return updated as T;
+      }
+    }
+  }
+
   // Fallback genérico para listas vazias ou objetos
   return ([] as unknown) as T;
 }

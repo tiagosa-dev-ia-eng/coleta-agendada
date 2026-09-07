@@ -113,6 +113,14 @@ export interface MockData {
     ai_used_mock?: boolean;
     ai_model?: string;
   }>;
+  users: Array<{
+    id: number;
+    email: string;
+    name: string;
+    role: { code: string; name: string };
+    is_active: boolean;
+    date_joined: string;
+  }>;
 }
 
 const STORAGE_KEY = "coleta_agendada_mock_state_v1";
@@ -395,6 +403,40 @@ const INITIAL_MOCK_DATA: MockData = {
       ai_model: "gemini-flash",
     },
   ],
+  users: [
+    {
+      id: 1,
+      email: "gestor@laboratoriocentral.com.br",
+      name: "Dr. Roberto Guimarães",
+      role: { code: "laboratory_admin", name: "Administrador / Gestor" },
+      is_active: true,
+      date_joined: "2026-08-01T08:00:00Z",
+    },
+    {
+      id: 2,
+      email: "atendente.triagem@laboratoriocentral.com.br",
+      name: "Carla Silveira",
+      role: { code: "laboratory_attendant", name: "Atendente / Triagem" },
+      is_active: true,
+      date_joined: "2026-08-10T09:30:00Z",
+    },
+    {
+      id: 3,
+      email: "juliana.mendes@laboratorio.com",
+      name: "Enfª. Juliana Mendes",
+      role: { code: "technician", name: "Técnica de Coleta" },
+      is_active: true,
+      date_joined: "2026-08-15T10:00:00Z",
+    },
+    {
+      id: 4,
+      email: "carlos.financeiro@laboratoriocentral.com.br",
+      name: "Carlos Eduardo Ramos",
+      role: { code: "laboratory_attendant", name: "Atendente / Faturamento" },
+      is_active: true,
+      date_joined: "2026-08-20T14:00:00Z",
+    },
+  ],
 };
 
 export function getMockData(): MockData {
@@ -405,7 +447,11 @@ export function getMockData(): MockData {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_MOCK_DATA));
       return INITIAL_MOCK_DATA;
     }
-    return JSON.parse(raw) as MockData;
+    const parsed = JSON.parse(raw) as MockData;
+    if (!parsed.users || !Array.isArray(parsed.users)) {
+      parsed.users = INITIAL_MOCK_DATA.users;
+    }
+    return parsed;
   } catch {
     return INITIAL_MOCK_DATA;
   }

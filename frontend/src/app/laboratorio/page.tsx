@@ -6,6 +6,9 @@ import Shell from "@/components/Shell";
 import { CalendarView } from "@/components/CalendarView";
 import { Button, Card, ConfirmModal, Empty, Notice, StatusBadge, fmtDate, money } from "@/components/ui";
 import WhatsAppContactsCard from "@/components/WhatsAppContactsCard";
+import LabHomeNav, { type LabView, type LabRole } from "@/components/LabHomeNav";
+import LabDashboard from "@/components/LabDashboard";
+import LabUsersManager from "@/components/LabUsersManager";
 import { authedFetch } from "@/lib/auth";
 
 type RequestRow = {
@@ -214,8 +217,17 @@ export default function Laboratorio() {
   const [err, setErr] = useState("");
   const [busyId, setBusyId] = useState<number | null>(null);
 
+  // Navegação do Hub e Controle de Perfil
+  const [activeView, setActiveView] = useState<LabView>("home");
+  const [labRole, setLabRole] = useState<LabRole>("admin");
+  const [usersCount, setUsersCount] = useState<number>(4);
+
   const loadAll = useCallback(async () => {
     try {
+      authedFetch<{ id: number }[]>("/api/v1/users")
+        .then((u) => setUsersCount(u?.length || 4))
+        .catch(() => {});
+
       const [r, e, a, c, pts, tchs, pharms, resList, auditResp] = await Promise.all([
         authedFetch<RequestRow[]>("/api/v1/requests"),
         authedFetch<Exam[]>("/api/v1/exams"),
@@ -574,29 +586,153 @@ export default function Laboratorio() {
 
   const activePoint = points.find((p) => p.id === selectedPointId) ?? points[0];
 
+  const navCounts = {
+    requests: reqs.length,
+    queue: queue.length,
+    points: points.length,
+    exams: exams.length,
+    resellers: resellers.length,
+    auditLogs: auditLogs.length,
+    users: usersCount,
+  };
+
+  const renderAdminOnlyWarning = (title: string) => (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-amber-900">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-2xl">
+        🔒
+      </div>
+      <h3 className="mt-3 text-lg font-bold">Acesso Restrito ao Administrador</h3>
+      <p className="mt-1 text-sm text-amber-700 max-w-md mx-auto">
+        O formulário <strong>{title}</strong> é restrito ao perfil de Administrador / Gestor do Laboratório.
+      </p>
+      <div className="mt-4 flex justify-center gap-2">
+        <Button kind="ghost" onClick={() => setActiveView("home")}>
+          Voltar ao Hub do Laboratório
+        </Button>
+        <Button kind="primary" onClick={() => setLabRole("admin")}>
+          Alternar para Perfil Admin
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <Shell title="Painel do Laboratório">
       {notice && <Notice kind="ok">{notice}</Notice>}
       {err && <Notice kind="err">{err}</Notice>}
 
-      {/* Métricas do Laboratório */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          ["Solicitações", reqs.length, "text-zinc-700"],
-          ["Rascunhos / Revisão", queue.length, "text-orange-600"],
-          ["Pontos de Coleta", points.length, "text-indigo-600"],
-          ["Aprovadas", counts.APPROVED ?? 0, "text-sky-600"],
-        ].map(([label, value, cls]) => (
-          <div key={String(label)} className="rounded-xl border border-zinc-200 bg-white p-3 text-center shadow-xs">
-            <p className={`text-2xl font-bold ${cls}`}>{value}</p>
-            <p className="text-xs text-zinc-500">{label}</p>
-          </div>
-        ))}
-      </div>
+      {/* FORMULÁRIO HOME (Hub Principal com Botões Grandes de Navegação e Seletor de Perfil) */}
+      {activeView === "home" && (
+        <LabHomeNav
+          currentRole={labRole}
+          onRoleChange={setLabRole}
+          onNavigate={setActiveView}
+          counts={navCounts}
+        />
+      )}
 
-      {/* F-02: Gestão de Pontos de Coleta e Janelas de Funcionamento */}
-      <Card
-        title="Pontos de Coleta e Unidades Parceiras (D-03 / F-02)"
+      {/* DEMAIS FORMULÁRIOS COM SUB-BARRA DE NAVEGAÇÃO E ACESSO RÁPIDO */}
+      {activeView !== "home" && (
+        <div className="space-y-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-zinc-200 bg-white p-3 shadow-xs">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveView("home")}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-zinc-800 transition cursor-pointer"
+              >
+                <span>←</span>
+                <span>Home do Laboratório</span>
+              </button>
+              <span className="text-zinc-300">/</span>
+              <span className="text-xs font-black text-emerald-800 uppercase tracking-wide">
+                {activeView === "dashboard"
+                  ? "Dashboard Analítico"
+                  : activeView === "points"
+                  ? "Pontos de Coleta"
+                  : activeView === "quotes"
+                  ? "Validação de Orçamentos"
+                  : activeView === "calendar"
+                  ? "Calendário Integrado"
+                  : activeView === "exams"
+                  ? "Exames & Tabela de Preços"
+                  : activeView === "resellers"
+                  ? "Gestão de Revendedores"
+                  : activeView === "audit"
+                  ? "Trilha de Auditoria"
+                  : "Cadastro de Usuários"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 overflow-x-auto py-0.5">
+              {[
+                { id: "dashboard" as LabView, label: "Dashboard", icon: "📊", adminOnly: false },
+                { id: "points" as LabView, label: "Pontos", icon: "📍", adminOnly: true },
+                { id: "quotes" as LabView, label: "Orçamentos", icon: "📋", adminOnly: false },
+                { id: "calendar" as LabView, label: "Calendário", icon: "📅", adminOnly: false },
+                { id: "exams" as LabView, label: "Exames", icon: "🧪", adminOnly: false },
+                { id: "resellers" as LabView, label: "Revendedores", icon: "🤝", adminOnly: true },
+                { id: "audit" as LabView, label: "Auditoria", icon: "🛡️", adminOnly: true },
+                { id: "users" as LabView, label: "Usuários", icon: "👥", adminOnly: true },
+              ].map((item) => {
+                const isAllowed = !item.adminOnly || labRole === "admin";
+                const isActive = activeView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      if (!isAllowed) {
+                        setNotice(`O módulo "${item.label}" é restrito ao perfil de Administrador.`);
+                        return;
+                      }
+                      setActiveView(item.id);
+                    }}
+                    className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+                      isActive
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : isAllowed
+                        ? "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                        : "bg-zinc-50 text-zinc-400 opacity-60"
+                    }`}
+                  >
+                    <span>{item.icon}</span>
+                    <span className="hidden md:inline">{item.label}</span>
+                    {!isAllowed && <span className="text-[9px]">🔒</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* FORMULÁRIO: DASHBOARD ANALÍTICO */}
+          {activeView === "dashboard" && (
+            <LabDashboard
+              requestsCount={reqs.length}
+              pointsCount={points.length}
+              appointmentsCount={appts.length}
+              approvedCount={counts.APPROVED ?? 0}
+              onBackToHome={() => setActiveView("home")}
+              onNavigateTo={(v) => setActiveView(v as LabView)}
+            />
+          )}
+
+          {/* FORMULÁRIO: CADASTRO DE USUÁRIOS */}
+          {activeView === "users" && (
+            <LabUsersManager
+              onBackToHome={() => setActiveView("home")}
+              isAdmin={labRole === "admin"}
+            />
+          )}
+
+          {/* FORMULÁRIO: PONTOS DE COLETA (Admin) */}
+          {activeView === "points" && (
+            labRole !== "admin" ? (
+              renderAdminOnlyWarning("Pontos de Coleta")
+            ) : (
+              <>
+                <Card
+                  title="Pontos de Coleta e Unidades Parceiras (D-03 / F-02)"
         actions={
           <div className="flex gap-2">
             <Button kind="ghost" onClick={() => void loadAll()}>Atualizar</Button>
@@ -896,8 +1032,12 @@ export default function Laboratorio() {
           </div>
         </div>
       )}
+            </>
+          )
+        )}
 
-      {/* F-03: Validação de Orçamentos & Gestão de Pagamentos */}
+          {/* FORMULÁRIO: VALIDAÇÃO DE ORÇAMENTOS (Admin / Atendente) */}
+          {activeView === "quotes" && (
       <Card title="Validação de orçamentos e Pagamentos (F-03)" actions={<Button kind="ghost" onClick={() => void loadAll()}>Atualizar</Button>}>
         {queue.length === 0 && <Empty text="Nenhum rascunho aguardando validação." />}
         <div className="space-y-4">
@@ -1008,23 +1148,10 @@ export default function Laboratorio() {
           })}
         </div>
       </Card>
+          )}
 
-      {/* Modal de Confirmação para Cancelar / Estornar Pagamento */}
-      <ConfirmModal
-        isOpen={Boolean(paymentModalData)}
-        title={paymentModalData?.action === "cancel" ? "Cancelar Link de Pagamento" : "Estornar Pagamento Confirmado"}
-        description={
-          paymentModalData?.action === "cancel"
-            ? `Tem certeza que deseja cancelar o link de pagamento de ${money(paymentModalData.amount)} para a solicitação ${paymentModalData.protocol}? O link expirará imediatamente.`
-            : `Atenção: Você está prestes a estornar ${money(paymentModalData?.amount ?? "0")} da solicitação ${paymentModalData?.protocol ?? ""}. O status passará para REFUNDED e as comissões registradas serão mantidas para auditoria.`
-        }
-        confirmText={paymentModalData?.action === "cancel" ? "Sim, Cancelar Link" : "Sim, Confirmar Estorno"}
-        kind="danger"
-        onConfirm={() => void confirmPaymentAction()}
-        onCancel={() => setPaymentModalData(null)}
-      />
-
-      {/* Demanda Evolutiva: Calendário Interativo Multi-formato (Semanal, Diário e Mensagem WhatsApp) */}
+          {/* FORMULÁRIO: CALENDÁRIO INTEGRADO (Admin / Atendente) */}
+          {activeView === "calendar" && (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-zinc-900">
@@ -1045,8 +1172,10 @@ export default function Laboratorio() {
           }))}
         />
       </div>
+          )}
 
-      {/* F-04: Gestão do Catálogo de Exames (CRUD + Preços por Laboratório) */}
+          {/* FORMULÁRIO: CADASTRO DE EXAMES E TABELA DE PREÇOS (Admin / Atendente) */}
+          {activeView === "exams" && (
       <Card
         title="Catálogo Geral de Exames e Tabela de Preços (F-04)"
         actions={
@@ -1128,8 +1257,13 @@ export default function Laboratorio() {
           </div>
         )}
       </Card>
+          )}
 
-      {/* F-05: Gestão de Revendedores Parceiros */}
+          {/* FORMULÁRIO: GESTÃO DE REVENDEDORES (Admin) */}
+          {activeView === "resellers" && (
+            labRole !== "admin" ? (
+              renderAdminOnlyWarning("Gestão de Revendedores")
+            ) : (
       <Card
         title="Gestão de Revendedores Parceiros (F-05)"
         actions={
@@ -1179,8 +1313,15 @@ export default function Laboratorio() {
           </div>
         )}
       </Card>
+            )
+          )}
 
-      {/* F-06: Trilha de Auditoria e Conformidade */}
+          {/* FORMULÁRIO: TRILHA DE AUDITORIA (Admin) */}
+          {activeView === "audit" && (
+            labRole !== "admin" ? (
+              renderAdminOnlyWarning("Trilha de Auditoria")
+            ) : (
+              <>
       <Card
         title="Trilha de Auditoria e Eventos de Conformidade (F-06)"
         actions={
@@ -1283,6 +1424,26 @@ export default function Laboratorio() {
           ))}
         </div>
       </Card>
+              </>
+            )
+          )}
+        </div>
+      )}
+
+      {/* Modal de Confirmação para Cancelar / Estornar Pagamento */}
+      <ConfirmModal
+        isOpen={Boolean(paymentModalData)}
+        title={paymentModalData?.action === "cancel" ? "Cancelar Link de Pagamento" : "Estornar Pagamento Confirmado"}
+        description={
+          paymentModalData?.action === "cancel"
+            ? `Tem certeza que deseja cancelar o link de pagamento de ${money(paymentModalData.amount)} para a solicitação ${paymentModalData.protocol}? O link expirará imediatamente.`
+            : `Atenção: Você está prestes a estornar ${money(paymentModalData?.amount ?? "0")} da solicitação ${paymentModalData?.protocol ?? ""}. O status passará para REFUNDED e as comissões registradas serão mantidas para auditoria.`
+        }
+        confirmText={paymentModalData?.action === "cancel" ? "Sim, Cancelar Link" : "Sim, Confirmar Estorno"}
+        kind="danger"
+        onConfirm={() => void confirmPaymentAction()}
+        onCancel={() => setPaymentModalData(null)}
+      />
       {/* Modal de Criação / Edição de Exame (F-04) */}
       {showExamModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -1407,9 +1568,6 @@ export default function Laboratorio() {
         onConfirm={() => void handleToggleResellerStatus()}
         onCancel={() => setConfirmToggleReseller(null)}
       />
-
-      {/* F-07: Contatos WhatsApp por Perfil (Laboratório Central) */}
-      <WhatsAppContactsCard ownerKind="laboratory" title="Canais Oficiais de WhatsApp do Laboratório (F-07)" />
 
     </Shell>
   );
