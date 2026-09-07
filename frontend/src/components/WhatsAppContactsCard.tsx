@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { authedFetch } from "@/lib/auth";
 
 export interface WhatsAppContact {
@@ -75,7 +75,7 @@ export default function WhatsAppContactsCard({ ownerKind, title }: Props) {
     setErrorMsg("");
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     if (!number.trim()) {
       setErrorMsg("Informe o número de telefone com DDD.");
